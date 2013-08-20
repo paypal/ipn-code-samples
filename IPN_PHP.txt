@@ -1,6 +1,10 @@
 <?php
 
-// STEP 1: Read POST data
+// Enable debug mode. This means we'll log requests into 'ipn.log' in the same directory.
+// Set this to 0 once you go live.
+define("DEBUG", 1);
+
+// Read POST data
 // reading posted data from directly from $_POST causes serialization
 // issues with array data in POST
 // reading raw POST data from input stream instead.
@@ -26,9 +30,12 @@ foreach ($myPost as $key => $value) {
 	$req .= "&$key=$value";
 }
 
-// STEP 2: Post IPN data back to paypal to validate
+// Post IPN data back to PayPal to validate the IPN data is genuine
+// Without this step anyone can fake IPN data
 
-	// Change to https://www.sandbox.paypal.com/cgi-bin/webscr for Sandbox testing
+	// Change to https://www.paypal.com/cgi-bin/webscr for live usage
+	// If you don't change this all IPN messages for live transactions will be marked 'INVALID'
+	// because you're still connecting to the sandbox IPN endpoint.
 	$paypal_url = "https://www.sandbox.paypal.com/cgi-bin/webscr";
 
 $ch = curl_init($paypal_url);
@@ -43,33 +50,40 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
+
+// Optional proxy configuration
+//curl_setopt($ch, CURLOPT_PROXY, $proxy);
+//curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, 1);
+
+// Set TCP timeout to 30 seconds
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 
-// In wamp like environments that do not come bundled with root authority certificates,
-// please download 'cacert.pem' from "http://curl.haxx.se/docs/caextract.html" and set the directory path
-// of the certificate as shown below.
-// $cert = "./cacert.pem";
-// curl_setopt($ch, CURLOPT_CAINFO, $cert);
+// Please download 'cacert.pem' from "http://curl.haxx.se/docs/caextract.html" and set the directory path
+// of the certificate as shown below. Ensure the file is readable by the webserver.
+$cert = "./cacert.pem";
+curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
 $res = curl_exec($ch);
 if (curl_errno($ch) != 0) // cURL error
 	{
-	echo 'Curl error encountered: ' . curl_error($ch);
-	exit("Error: IPN connection error. Do you need to download cacert.pem?");
-	error_log("IPN connection failure. Do you need to download cacert.pem?\r\n", 3, "./ipn.log");
+	if(DEBUG == true) {	
+		error_log(date('[Y-m-d H:i e] '). "Can't connect to PayPal to validate IPN message: " . curl_error($ch) . "\r\n", 3, "./ipn.log");
+	}
+	curl_close($ch);
 
+} else {
 	curl_close($ch);
 }
-curl_close($ch);
 
-// STEP 3: Inspect IPN validation result and act accordingly
+// Inspect IPN validation result and act accordingly
 
 if (strcmp ($res, "VERIFIED") == 0) {
 	// check whether the payment_status is Completed
 	// check that txn_id has not been previously processed
-	// check that receiver_email is your Primary PayPal email
+	// check that receiver_email is your PayPal email
 	// check that payment_amount/payment_currency are correct
-	// process payment
+	// process payment and mark item as paid.
 
 	// assign posted variables to local variables
 	//$item_name = $_POST['item_name'];
@@ -80,14 +94,15 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	//$txn_id = $_POST['txn_id'];
 	//$receiver_email = $_POST['receiver_email'];
 	//$payer_email = $_POST['payer_email'];
-	echo "Verified IPN.";
-	error_log("Verified IPN.\r\n $req \r\n\r\n", 3, "./ipn.log");
-
+	
+	if(DEBUG == true) {
+		error_log(date('[Y-m-d H:i e] '). "Verified IPN: $req \r\n", 3, "./ipn.log");
+	}
 } else if (strcmp ($res, "INVALID") == 0) {
-		// log for manual investigation
-	echo "Invalid IPN.";
-	error_log("Invalid IPN.\r\n $req \r\n\r\n", 3, "./ipn.log");
-
-
+	// log for manual investigation
+	// Add business logic here which deals with invalid IPN messages
+	if(DEBUG == true) {
+		error_log(date('[Y-m-d H:i e] '). "Invalid IPN: $req \r\n", 3, "./ipn.log");
+	}
 }
 ?>
