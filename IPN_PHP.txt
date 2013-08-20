@@ -1,13 +1,12 @@
 <?php
 
-// Enable debug mode. This means we'll log requests into 'ipn.log' in the same directory.
+// CONFIG: Enable debug mode. This means we'll log requests into 'ipn.log' in the same directory.
 // Set this to 0 once you go live.
 define("DEBUG", 1);
 
 // Read POST data
-// reading posted data from directly from $_POST causes serialization
-// issues with array data in POST
-// reading raw POST data from input stream instead.
+// reading posted data directly from $_POST causes serialization
+// issues with array data in POST. Reading raw POST data from input stream instead.
 $raw_post_data = file_get_contents('php://input');
 $raw_post_array = explode('&', $raw_post_data);
 $myPost = array();
@@ -33,7 +32,7 @@ foreach ($myPost as $key => $value) {
 // Post IPN data back to PayPal to validate the IPN data is genuine
 // Without this step anyone can fake IPN data
 
-	// Change to https://www.paypal.com/cgi-bin/webscr for live usage
+	// CONFIG: Change to https://www.paypal.com/cgi-bin/webscr for live usage
 	// If you don't change this all IPN messages for live transactions will be marked 'INVALID'
 	// because you're still connecting to the sandbox IPN endpoint.
 	$paypal_url = "https://www.sandbox.paypal.com/cgi-bin/webscr";
@@ -51,7 +50,7 @@ curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
 
-// Optional proxy configuration
+// CONFIG: Optional proxy configuration
 //curl_setopt($ch, CURLOPT_PROXY, $proxy);
 //curl_setopt($ch, CURLOPT_HTTPPROXYTUNNEL, 1);
 
@@ -59,7 +58,7 @@ curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 
-// Please download 'cacert.pem' from "http://curl.haxx.se/docs/caextract.html" and set the directory path
+// CONFIG: Please download 'cacert.pem' from "http://curl.haxx.se/docs/caextract.html" and set the directory path
 // of the certificate as shown below. Ensure the file is readable by the webserver.
 $cert = "./cacert.pem";
 curl_setopt($ch, CURLOPT_CAINFO, $cert);
