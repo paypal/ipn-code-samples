@@ -1,8 +1,13 @@
 <?php
 
 // CONFIG: Enable debug mode. This means we'll log requests into 'ipn.log' in the same directory.
-// Set this to 0 once you go live.
+// Especially useful if you encounter network errors or other intermittent problems with IPN (validation).
+// Set this to 0 once you go live or don't require logging.
 define("DEBUG", 1);
+
+// Set to 0 once you're ready to go live
+define("USE_SANDBOX", 1);
+
 
 // Read POST data
 // reading posted data directly from $_POST causes serialization
@@ -32,10 +37,11 @@ foreach ($myPost as $key => $value) {
 // Post IPN data back to PayPal to validate the IPN data is genuine
 // Without this step anyone can fake IPN data
 
-// CONFIG: Change to https://www.paypal.com/cgi-bin/webscr for live usage
-// If you don't change this all IPN messages for live transactions will be marked 'INVALID'
-// because you're still connecting to the sandbox IPN endpoint.
-$paypal_url = "https://www.sandbox.paypal.com/cgi-bin/webscr";
+if(USE_SANDBOX == true) {
+	$paypal_url = "https://www.sandbox.paypal.com/cgi-bin/webscr";
+} else {
+	$paypal_url = "https://www.paypal.com/cgi-bin/webscr";
+}
 
 $ch = curl_init($paypal_url);
 if ($ch == FALSE) {
@@ -49,6 +55,11 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, $req);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
+
+if(DEBUG == true) {
+	curl_setopt($ch, CURLOPT_HEADER, 1);
+	curl_setopt($ch, CURLINFO_HEADER_OUT, 1);
+}
 
 // CONFIG: Optional proxy configuration
 //curl_setopt($ch, CURLOPT_PROXY, $proxy);
@@ -73,7 +84,12 @@ if (curl_errno($ch) != 0) // cURL error
 	curl_close($ch);
 
 } else {
-	curl_close($ch);
+		// Unexpected error occured. We were able to connect to PayPal, but we didn't get INVALID or VERIFIED back. Log the entire HTTP response if debug is switched on.
+		if(DEBUG == true) {
+			error_log(date('[Y-m-d H:i e] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req\r\n", 3, "./ipn.log");
+			error_log(date('[Y-m-d H:i e] '). "HTTP response of validation request:". $res ."\r\n", 3, "./ipn.log");
+		}
+		curl_close($ch);
 }
 
 // Inspect IPN validation result and act accordingly
