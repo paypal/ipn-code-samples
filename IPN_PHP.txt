@@ -32,10 +32,10 @@ foreach ($myPost as $key => $value) {
 // Post IPN data back to PayPal to validate the IPN data is genuine
 // Without this step anyone can fake IPN data
 
-	// CONFIG: Change to https://www.paypal.com/cgi-bin/webscr for live usage
-	// If you don't change this all IPN messages for live transactions will be marked 'INVALID'
-	// because you're still connecting to the sandbox IPN endpoint.
-	$paypal_url = "https://www.sandbox.paypal.com/cgi-bin/webscr";
+// CONFIG: Change to https://www.paypal.com/cgi-bin/webscr for live usage
+// If you don't change this all IPN messages for live transactions will be marked 'INVALID'
+// because you're still connecting to the sandbox IPN endpoint.
+$paypal_url = "https://www.sandbox.paypal.com/cgi-bin/webscr";
 
 $ch = curl_init($paypal_url);
 if ($ch == FALSE) {
@@ -60,8 +60,9 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 
 // CONFIG: Please download 'cacert.pem' from "http://curl.haxx.se/docs/caextract.html" and set the directory path
 // of the certificate as shown below. Ensure the file is readable by the webserver.
-$cert = "./cacert.pem";
-curl_setopt($ch, CURLOPT_CAINFO, $cert);
+// This is mandatory for some environments.
+// $cert = "./cacert.pem";
+//curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
 $res = curl_exec($ch);
 if (curl_errno($ch) != 0) // cURL error
@@ -104,4 +105,5 @@ if (strcmp ($res, "VERIFIED") == 0) {
 		error_log(date('[Y-m-d H:i e] '). "Invalid IPN: $req \r\n", 3, "./ipn.log");
 	}
 }
+
 ?>
