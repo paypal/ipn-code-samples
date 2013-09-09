@@ -9,6 +9,9 @@ define("DEBUG", 1);
 define("USE_SANDBOX", 1);
 
 
+define("LOG_FILE", "./ipn.log");
+
+
 // Read POST data
 // reading posted data directly from $_POST causes serialization
 // issues with array data in POST. Reading raw POST data from input stream instead.
@@ -72,22 +75,27 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 // CONFIG: Please download 'cacert.pem' from "http://curl.haxx.se/docs/caextract.html" and set the directory path
 // of the certificate as shown below. Ensure the file is readable by the webserver.
 // This is mandatory for some environments.
-// $cert = "./cacert.pem";
+
+//$cert = __DIR__ . "./cacert.pem";
 //curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
 $res = curl_exec($ch);
 if (curl_errno($ch) != 0) // cURL error
 	{
 	if(DEBUG == true) {	
-		error_log(date('[Y-m-d H:i e] '). "Can't connect to PayPal to validate IPN message: " . curl_error($ch) . "\r\n", 3, "./ipn.log");
+		error_log(date('[Y-m-d H:i e] '). "Can't connect to PayPal to validate IPN message: " . curl_error($ch) . PHP_EOL, 3, LOG_FILE);
 	}
 	curl_close($ch);
+	exit;
 
 } else {
-		// Unexpected error occured. We were able to connect to PayPal, but we didn't get INVALID or VERIFIED back. Log the entire HTTP response if debug is switched on.
+		// Log the entire HTTP response if debug is switched on.
 		if(DEBUG == true) {
-			error_log(date('[Y-m-d H:i e] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req\r\n", 3, "./ipn.log");
-			error_log(date('[Y-m-d H:i e] '). "HTTP response of validation request:". $res ."\r\n", 3, "./ipn.log");
+			error_log(date('[Y-m-d H:i e] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req" . PHP_EOL, 3, LOG_FILE);
+			error_log(date('[Y-m-d H:i e] '). "HTTP response of validation request: $res" . PHP_EOL, 3, LOG_FILE);
+
+			// Split response headers and payload
+			list($headers, $res) = explode("\r\n\r\n", $res, 2);
 		}
 		curl_close($ch);
 }
@@ -112,13 +120,13 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	//$payer_email = $_POST['payer_email'];
 	
 	if(DEBUG == true) {
-		error_log(date('[Y-m-d H:i e] '). "Verified IPN: $req \r\n", 3, "./ipn.log");
+		error_log(date('[Y-m-d H:i e] '). "Verified IPN: $req ". PHP_EOL, 3, LOG_FILE);
 	}
 } else if (strcmp ($res, "INVALID") == 0) {
 	// log for manual investigation
 	// Add business logic here which deals with invalid IPN messages
 	if(DEBUG == true) {
-		error_log(date('[Y-m-d H:i e] '). "Invalid IPN: $req \r\n", 3, "./ipn.log");
+		error_log(date('[Y-m-d H:i e] '). "Invalid IPN: $req" . PHP_EOL, 3, LOG_FILE);
 	}
 }
 
