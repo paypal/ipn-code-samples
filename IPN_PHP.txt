@@ -102,7 +102,7 @@ if (curl_errno($ch) != 0) // cURL error
 
 // Inspect IPN validation result and act accordingly
 
-if (strcmp ($res, "VERIFIED") == 0) {
+if (strcmp ($res, "VERIFIED") !== false) {
 	// check whether the payment_status is Completed
 	// check that txn_id has not been previously processed
 	// check that receiver_email is your PayPal email
@@ -122,7 +122,7 @@ if (strcmp ($res, "VERIFIED") == 0) {
 	if(DEBUG == true) {
 		error_log(date('[Y-m-d H:i e] '). "Verified IPN: $req ". PHP_EOL, 3, LOG_FILE);
 	}
-} else if (strcmp ($res, "INVALID") == 0) {
+} else if (strcmp ($res, "INVALID") !== false) {
 	// log for manual investigation
 	// Add business logic here which deals with invalid IPN messages
 	if(DEBUG == true) {
