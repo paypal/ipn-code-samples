@@ -95,7 +95,7 @@ if (curl_errno($ch) != 0) // cURL error
 			error_log(date('[Y-m-d H:i e] '). "HTTP response of validation request: $res" . PHP_EOL, 3, LOG_FILE);
 
 			// Split response headers and payload
-			list($headers, $res) = explode("\r\n\r\n", $res, 2);
+			list( , , $res) = explode("\r\n\r\n", $res);
 		}
 		curl_close($ch);
 }
