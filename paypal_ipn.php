@@ -102,6 +102,10 @@ if (curl_errno($ch) != 0) // cURL error
 
 // Inspect IPN validation result and act accordingly
 
+// Split response headers and payload, a better way for strcmp
+$parts = explode("\r\n\r\n", $res);
+$res = array_pop($parts);
+
 if (strcmp ($res, "VERIFIED") == 0) {
 	// check whether the payment_status is Completed
 	// check that txn_id has not been previously processed
