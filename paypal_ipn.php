@@ -93,9 +93,6 @@ if (curl_errno($ch) != 0) // cURL error
 		if(DEBUG == true) {
 			error_log(date('[Y-m-d H:i e] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req" . PHP_EOL, 3, LOG_FILE);
 			error_log(date('[Y-m-d H:i e] '). "HTTP response of validation request: $res" . PHP_EOL, 3, LOG_FILE);
-
-			// Split response headers and payload
-			list($headers, $res) = explode("\r\n\r\n", $res, 2);
 		}
 		curl_close($ch);
 }
@@ -103,8 +100,8 @@ if (curl_errno($ch) != 0) // cURL error
 // Inspect IPN validation result and act accordingly
 
 // Split response headers and payload, a better way for strcmp
-$parts = explode("\r\n\r\n", $res,2);
-$res = array_pop($parts);
+$parts = explode("\r\n\r\n", trim($res));
+$res = trim(array_pop($parts));
 
 if (strcmp ($res, "VERIFIED") == 0) {
 	// check whether the payment_status is Completed
