@@ -103,7 +103,7 @@ if (curl_errno($ch) != 0) // cURL error
 // Inspect IPN validation result and act accordingly
 
 // Split response headers and payload, a better way for strcmp
-$parts = explode("\r\n\r\n", $res);
+$parts = explode("\r\n\r\n", $res,2);
 $res = array_pop($parts);
 
 if (strcmp ($res, "VERIFIED") == 0) {
