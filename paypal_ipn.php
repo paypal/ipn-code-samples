@@ -89,40 +89,86 @@ if (curl_errno($ch) != 0) // cURL error
 	exit;
 
 } else {
-		// Log the entire HTTP response if debug is switched on.
-		if(DEBUG == true) {
-			error_log(date('[Y-m-d H:i e] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req" . PHP_EOL, 3, LOG_FILE);
-			error_log(date('[Y-m-d H:i e] '). "HTTP response of validation request: $res" . PHP_EOL, 3, LOG_FILE);
-
-			// Split response headers and payload
-			list($headers, $res) = explode("\r\n\r\n", $res, 2);
-		}
-		curl_close($ch);
+	
+	// Log the entire HTTP response if debug is switched on.
+	if(DEBUG == true) {
+		error_log(date('[Y-m-d H:i e] '). "HTTP request of validation request:". curl_getinfo($ch, CURLINFO_HEADER_OUT) ." for IPN payload: $req" . PHP_EOL, 3, LOG_FILE);
+		error_log(date('[Y-m-d H:i e] '). "HTTP response of validation request: $res" . PHP_EOL, 3, LOG_FILE);
+	}
+	curl_close($ch);
+	
+	// Getting the result of validation (VERIFIED or INVALID) in $validation variable
+	$splitedResponse = explode("\r\n\r\n", $res);
+	if(sizeof($splitedResponse) == 2) {
+		$headers = $splitedResponse[0];
+		$validation = $splitedResponse[1];
+	}
+	elseif(sizeof($splitedResponse) == 3){ // in case Paypal answers "HTTP/1.1 100 Continue\r\n\r\n" at first before beginning "HTTP/1.1 200 OK...."
+		$continueHeaders = $splitedResponse[0];
+		$headers = $splitedResponse[1];
+		$validation = $splitedResponse[2];
+	}
+	else {
+		error_log(date('[Y-m-d H:i e] '). "ERROR: Received message is not valid." . PHP_EOL, 3, LOG_FILE);
+		exit;
+	}
 }
 
 // Inspect IPN validation result and act accordingly
 
-if (strcmp ($res, "VERIFIED") == 0) {
+if (strcmp ($validation, "VERIFIED") == 0) {
+	
 	// check whether the payment_status is Completed
 	// check that txn_id has not been previously processed
 	// check that receiver_email is your PayPal email
 	// check that payment_amount/payment_currency are correct
 	// process payment and mark item as paid.
 
-	// assign posted variables to local variables
-	//$item_name = $_POST['item_name'];
-	//$item_number = $_POST['item_number'];
-	//$payment_status = $_POST['payment_status'];
-	//$payment_amount = $_POST['mc_gross'];
-	//$payment_currency = $_POST['mc_currency'];
-	//$txn_id = $_POST['txn_id'];
-	//$receiver_email = $_POST['receiver_email'];
-	//$payer_email = $_POST['payer_email'];
+	// assign posted variables to local variables (some POST variables may not exist in some situations eg: when using Paypal Sandbox)
+	// if(isset($_POST['item_name']))
+		// $item_name = $_POST['item_name'];
+	// else
+		// $item_name = null;
+	
+	// if(isset($_POST['item_number']))
+		// $item_number = $_POST['item_number'];
+	// else
+		// $item_number =  null;
+	
+	// if(isset($_POST['payment_status']))
+		// $payment_status = $_POST['payment_status'];
+	// else
+		// $payment_status = null;
+	
+	// if(isset($_POST['mc_gross']))
+		// $mc_gross = $_POST['mc_gross'];
+	// else
+		// $mc_gross = null;
+	
+	// if(isset($_POST['mc_currency']))
+		// $mc_currency = $_POST['mc_currency'];
+	// else
+		// $mc_currency = null;
+
+	// if(isset($_POST['txn_id']))
+		// $txn_id = $_POST['txn_id'];
+	// else
+		// $txn_id = null;
+	
+	// if(isset($_POST['receiver_email']))
+		// $receiver_email = $_POST['receiver_email'];
+	// else
+		// $receiver_email = null;
+	
+	// if(isset($_POST['payer_email']))
+		// $payer_email = $_POST['payer_email'];
+	// else
+		// $payer_email = null;
 	
 	if(DEBUG == true) {
 		error_log(date('[Y-m-d H:i e] '). "Verified IPN: $req ". PHP_EOL, 3, LOG_FILE);
 	}
-} else if (strcmp ($res, "INVALID") == 0) {
+} else if (strcmp ($validation, "INVALID") == 0) {
 	// log for manual investigation
 	// Add business logic here which deals with invalid IPN messages
 	if(DEBUG == true) {
