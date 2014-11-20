@@ -21,7 +21,7 @@ $myPost = array();
 foreach ($raw_post_array as $keyval) {
 	$keyval = explode ('=', $keyval);
 	if (count($keyval) == 2)
-		$myPost[$keyval[0]] = urldecode($keyval[1]);
+		$myPost[urldecode($keyval[0])] = urldecode($keyval[1]);//urldecode key for chained payments using brackets so we can read transaction[0].amount
 }
 // read the post from PayPal system and add 'cmd'
 $req = 'cmd=_notify-validate';
@@ -34,7 +34,7 @@ foreach ($myPost as $key => $value) {
 	} else {
 		$value = urlencode($value);
 	}
-	$req .= "&$key=$value";
+	$req .= "&".urlencode($key)."=$value";
 }
 
 // Post IPN data back to PayPal to validate the IPN data is genuine
