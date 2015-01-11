@@ -1,13 +1,24 @@
 <!--- COLDFUSION   --->
+<CFSET str="cmd=_notify-validate">
+<CFLOOP INDEX="TheField" list="#Form.FieldNames#"> <!--- field names are in uppercase in the form scope --->
+    <CFSET str = str & "&#LCase(TheField)#=#URLEncodedFormat(Evaluate(TheField))#">
+</CFLOOP>
+<CFIF structkeyexists(FORM,'payment_date')>
+    <CFSET str = str & "&payment_date=#URLEncodedFormat(Form.payment_date)#">
+</CFIF>
+<CFIF structkeyexists(FORM,'subscr_date')>
+    <CFSET str = str & "&subscr_date=#URLEncodedFormat(Form.subscr_date)#">
+</CFIF>
+<!-- post back to PayPal system to validate -->
+<CFHTTP URL="https://www.paypal.com/cgi-bin/webscr?#str#" METHOD="GET" RESOLVEURL="false"></CFHTTP>
 
-<!--- read post from PayPal system --->
+<!--- Original code does not work.
 <CFSET requestData = getHTTPRequestData() />
 
-<!--- add 'cmd' and post back to PayPal system to validate --->
 <CFHTTP url="https://www.paypal.com/cgi-bin/webscr?cmd=_notify-validate&#requestData.content#" >
 	<cfhttpparam type="header"  name="Host" value="www.paypal.com"> 
 </CFHTTP>
-
+--->
  
 <!--- check notification validation --->
 <CFIF #CFHTTP.FileContent# is "VERIFIED">
