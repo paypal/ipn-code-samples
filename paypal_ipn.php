@@ -76,7 +76,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
 // of the certificate as shown below. Ensure the file is readable by the webserver.
 // This is mandatory for some environments.
 
-//$cert = __DIR__ . "./cacert.pem";
+//$cert = __DIR__ . "/cacert.pem";
 //curl_setopt($ch, CURLOPT_CAINFO, $cert);
 
 $res = curl_exec($ch);
