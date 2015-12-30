@@ -103,7 +103,7 @@ if (curl_errno($ch) != 0) // cURL error
 $tokens = explode("\r\n\r\n", trim($res));
 $res = trim(end($tokens));
 
-if (strcmp ($res, "VERIFIED") == 0) {
+if (strpos($res, "VERIFIED") !== 0){
 	// check whether the payment_status is Completed
 	// check that txn_id has not been previously processed
 	// check that receiver_email is your PayPal email
