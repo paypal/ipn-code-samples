@@ -1,52 +1,62 @@
 #!/usr/bin/perl
+BEGIN {
+$| = 1; # Flush
+use strict;
+use warnings;
+# Catch fatal errors and die with 200 OK plain/text header
+# This is done because IPN will keep sending up to 16 requests 
+# till the right header is posted.
+$SIG{__DIE__} = \&print_header;
+}
+#my $Just_Exit = 0; # if you need it
 
-# It is highly recommended that you use version 6 upwards of 
-# the UserAgent module since it provides for tighter server 
+# Lots of servers will not resolve the IP to a host name
+# So variable $ENV{'REMOTE_HOST'} will not have a value.
+# If you want any security check if it is a PayPal IP.
+#die('Does not match PayPal at IP:'.$ENV{'REMOTE_ADDR'})
+# if ($ENV{'REMOTE_ADDR'} ne '173.0.82.77');
+
+# comment the one your not using
+my $PP_server = 'www.sandbox.paypal.com'; # sandbox IP:173.0.82.77
+#my $PP_server = 'www.paypal.com'; # production IP:172.230.217.203
+
+# It is highly recommended that you use version 6 upwards of
+# the UserAgent module since it provides for tighter server
 # certificate validation
 use LWP::UserAgent 6;
 
 # read post from PayPal system and add 'cmd'
-read (STDIN, $query, $ENV{'CONTENT_LENGTH'});
-$query .= '&cmd=_notify-validate';
+use CGI qw(:standard);
+my $cgi = CGI->new();
+my $query = 'cmd=_notify-validate&';
+$query .= join('&', map { $_.'='.$cgi->param($_) } $cgi->param());
 
 # post back to PayPal system to validate
-$ua = LWP::UserAgent->new(ssl_opts => { verify_hostname => 1 });
-$req = HTTP::Request->new('POST', 'https://www.paypal.com/cgi-bin/webscr');
+my $ua = LWP::UserAgent->new; # None SSL on HTTPS
+# for some SSL on HTTPS.
+# SSL can be an issue to get working.
+# Try none SSL on HTTPS first.
+#my $ua = LWP::UserAgent->new(ssl_opts => { verify_hostname => 1,SSL_version => 'SSLv23:!TLSv12' });
+my $req = HTTP::Request->new('POST', 'https://'.$PP_server.'/cgi-bin/webscr');
 $req->content_type('application/x-www-form-urlencoded');
-$req->header(Host => 'www.paypal.com');
+$req->header(Host => $PP_server);
 $req->content($query);
-$res = $ua->request($req);
+my $res = $ua->request($req);
 
-# split posted variables into pairs
-@pairs = split(/&/, $query);
-$count = 0;
-foreach $pair (@pairs) {
- ($name, $value) = split(/=/, $pair);
- $value =~ tr/+/ /;
- $value =~ s/%([a-fA-F0-9][a-fA-F0-9])/pack("C", hex($1))/eg;
- $variable{$name} = $value;
- $count++;
-}
-
-# assign posted variables to local variables
-$item_name = $variable{'item_name'};
-$item_number = $variable{'item_number'};
-$payment_status = $variable{'payment_status'};
-$payment_amount = $variable{'mc_gross'};
-$payment_currency = $variable{'mc_currency'};
-$txn_id = $variable{'txn_id'};
-$receiver_email = $variable{'receiver_email'};
-$payer_email = $variable{'payer_email'};
-
+# make the variable hash
+my %variable =
+ map { split(m'='x, $_, 2) }
+ grep { m'='x }
+ split(m'&'x, $query);
 
 if ($res->is_error) {
  # HTTP error
 }
 elsif ($res->content eq 'VERIFIED') {
- # check the $payment_status=Completed
- # check that $txn_id has not been previously processed
- # check that $receiver_email is your Primary PayPal email
- # check that $payment_amount/$payment_currency are correct
+ # check the $variable{'payment_status'}=Completed
+ # check that $variable{'txn_id'} has not been previously processed
+ # check that $variable{'receiver_email'} is your Primary PayPal email
+ # check that payment_amount $variable{'mc_gross'}/payment_currency $variable{'mc_currency'} are correct
  # process payment
 }
 elsif ($res->content eq 'INVALID') {
@@ -55,4 +65,23 @@ elsif ($res->content eq 'INVALID') {
 else {
  # error
 }
-print "content-type: text/plain\n\n";
+# end with header or will die with header
+print_header('Good');
+
+sub print_header {
+my $error = shift || '';
+# what you do here can die like logging. That can be detected with $Just_Exit
+# so we know we have been here before and not to run the thing that died
+# if ( $error ne 'Good' && ! $Just_Exit ) {
+# $Just_Exit = 1;
+# log($error);
+# }
+# error will be the die info with \n
+
+# Static Header. Do not use CGI.pm for header, it can die.
+print <<'HEADER';
+Content-Type: text/plain
+
+HEADER
+exit(0);
+}
