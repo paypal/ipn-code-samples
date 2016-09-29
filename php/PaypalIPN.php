@@ -54,7 +54,7 @@ class PaypalIPN
      * @return bool
      * @throws Exception
      */
-    function verifyIPN()
+    public function verifyIPN()
     {
         if ( ! count($_POST)) {
             throw new Exception("Missing POST Data");
@@ -132,4 +132,3 @@ class PaypalIPN
         }
     }
 }
-
