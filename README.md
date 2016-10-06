@@ -11,9 +11,9 @@ __This repository contains samples in multiple languages for validating PayPal I
 
 ## IPN Overview
 
-* PayPal Instant Payment Notification is a call back system that will get initiated once a transaction is completed (eg: when an express checkout completed successfully).
-* You will receive the transaction related IPN variables on your IPN url that you have specified in your request, otherwise it will default to the IPN url set in your PayPal account.
-*  You must send these IPN variables back to PayPal system for verification. Upon verification, PayPal will send
+* PayPal Instant Payment Notification is a call back system that will get initiated once a transaction is completed (e.g. when an express checkout completed successfully).
+* You will receive the transaction-related IPN variables on your IPN url that you have specified in your request, otherwise it will default to the IPN url set in your PayPal account.
+*  You must send these IPN variables back to PayPal servers for verification. Upon verification, PayPal will send
 a response string with "VERIFIED" or "INVALID".
 * If your server fails to respond with a successful HTTP response (200), PayPal will resend this IPN either until a success is received or up to 16 times.
 * If your server consistently fails to respond, your IPN may be disabled, in which case you will receive an notification on your primary paypal email address. 
@@ -21,7 +21,7 @@ a response string with "VERIFIED" or "INVALID".
 ## How to run these samples
 
 * IPN Listener script samples are provided for different languages.
-* Deploy IPN Listener script in Cloud environment or you can expose your server port using any third party local tunneling software, so that you can receive PayPal IPN callback.
+* Deploy IPN Listener script in a cloud environment or you can expose your server port using any third party local tunneling software, so that you can receive PayPal IPN callback.
 * You can test your software using the [PayPal IPN Simulator](https://developer.paypal.com/developer/ipnSimulator/). Ensure your listener is validating the sandbox messages at the correct testing endpoint. 
 
 ## License
