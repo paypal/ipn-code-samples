@@ -14,11 +14,11 @@ $SIG{__DIE__} = \&print_header;
 # So variable $ENV{'REMOTE_HOST'} will not have a value.
 # If you want any security check if it is a PayPal IP.
 #die('Does not match PayPal at IP:'.$ENV{'REMOTE_ADDR'})
-# if ($ENV{'REMOTE_ADDR'} ne '173.0.82.77');
+# if ($ENV{'REMOTE_ADDR'} ne '173.0.82.66');
 
 # comment the one your not using
-my $PP_server = 'www.sandbox.paypal.com'; # sandbox IP:173.0.82.77
-#my $PP_server = 'www.paypal.com'; # production IP:172.230.217.203
+my $PP_server = 'ipnpb.sandbox.paypal.com'; # sandbox IP:173.0.82.66
+#my $PP_server = 'ipnpb.paypal.com'; # production IP:173.0.88.40
 
 # It is highly recommended that you use version 6 upwards of
 # the UserAgent module since it provides for tighter server
@@ -32,11 +32,7 @@ my $query = 'cmd=_notify-validate&';
 $query .= join('&', map { $_.'='.$cgi->param($_) } $cgi->param());
 
 # post back to PayPal system to validate
-my $ua = LWP::UserAgent->new; # None SSL on HTTPS
-# for some SSL on HTTPS.
-# SSL can be an issue to get working.
-# Try none SSL on HTTPS first.
-#my $ua = LWP::UserAgent->new(ssl_opts => { verify_hostname => 1,SSL_version => 'SSLv23:!TLSv12' });
+my $ua = LWP::UserAgent->new(ssl_opts => { verify_hostname => 1,SSL_version => 'SSLv23:!TLSv12' });
 my $req = HTTP::Request->new('POST', 'https://'.$PP_server.'/cgi-bin/webscr');
 $req->content_type('application/x-www-form-urlencoded');
 $req->header(Host => $PP_server);
