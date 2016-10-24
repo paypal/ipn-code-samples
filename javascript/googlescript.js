@@ -8,7 +8,6 @@ function doPost(e) {
   if (isProduction)  paypalURL = strLive;
   
   var payload = "cmd=_notify-validate&" + e.postData.contents;
-  payload = payload.replace("+", "%2B");
 
   var options =
     {
