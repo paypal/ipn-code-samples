@@ -49,7 +49,7 @@ class PaypalIPN
 
     /**
      * Verification Function
-     * Sends the incoming post data back to paypal using the cURL library.
+     * Sends the incoming post data back to PayPal using the cURL library.
      *
      * @return bool
      * @throws Exception
@@ -91,7 +91,7 @@ class PaypalIPN
             $req .= "&$key=$value";
         }
 
-        // Post the data back to paypal, using curl. Throw exceptions if errors occur.
+        // Post the data back to PayPal, using curl. Throw exceptions if errors occur.
         $ch = curl_init($this->getPaypalUri());
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_POST, 1);
@@ -124,7 +124,7 @@ class PaypalIPN
         }
         curl_close($ch);
 
-        // Check if paypal verfifes the IPN data, and if so, return true.
+        // Check if PayPal verifies the IPN data, and if so, return true.
         if ($res == self::VALID) {
             return true;
         } else {
