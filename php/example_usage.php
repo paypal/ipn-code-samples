@@ -2,7 +2,7 @@
 
 use PaypalIPN;
 
-$ipn = new PayPalIPN();
+$ipn = new PaypalIPN();
 
 // Use the sandbox endpoint during testing.
 $ipn->useSandbox();
