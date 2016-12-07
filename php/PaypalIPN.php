@@ -3,22 +3,24 @@
 class PaypalIPN
 {
 
+    /**
+     * @var bool $use_sandbox     Indicates if the sandbox endpoint is used.
+     */
     private $use_sandbox = false;
-
+    /**
+     * @var bool $use_local_certs Indicates if the local certificates are used.
+     */
     private $use_local_certs = true;
 
-    /*
-     * PayPal IPN postback endpoints
-     */
-
+    /** Production Postback URL */
     const VERIFY_URI = 'https://ipnpb.paypal.com/cgi-bin/webscr';
+    /** Sandbox Postback URL */
     const SANDBOX_VERIFY_URI = 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr';
 
-    /*
-     * Possible responses from PayPal after the request is issued.
-     */
 
+    /** Response from PayPal indicating validation was successful */
     const VALID = 'VERIFIED';
+    /** Response from PayPal indicating validation failed */
     const INVALID = 'INVALID';
 
 
@@ -30,6 +32,16 @@ class PaypalIPN
     public function useSandbox()
     {
         $this->use_sandbox = true;
+    }
+
+    /**
+     * Sets curl to use php curl's built in certs (may be required in some
+     * environments).
+     * @return void
+     */
+    public function usePHPCerts()
+    {
+        $this->use_local_certs = false;
     }
 
 
