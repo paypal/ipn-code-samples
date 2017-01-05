@@ -4,7 +4,7 @@
 <CFSET requestData = getHTTPRequestData() />
 
 <!--- add 'cmd' and post back to PayPal system to validate --->
-<CFHTTP url="https://www.paypal.com/cgi-bin/webscr?cmd=_notify-validate&#requestData.content#" >
+<CFHTTP url="https://www.paypal.com/cgi-bin/webscr?cmd=_notify-validate&#URLEncodedFormat(requestData.content)#" >
 	<cfhttpparam type="header"  name="Host" value="www.paypal.com"> 
 </CFHTTP>
 
@@ -38,11 +38,11 @@
         <CFSET payer_email=FORM.payer_email>
     </CFIF>    
     <CFIF IsDefined("FORM.item_number")>
-	<CFSET item_number=FORM.item_number>
+		<CFSET item_number=FORM.item_number>
     </CFIF>
 	
-    <CFELSEIF #CFHTTP.FileContent# is "INVALID">
+<CFELSEIF #CFHTTP.FileContent# is "INVALID">
 	<!--- log for investigation --->
-    <CFELSE>	
-<!--- error --->
+<CFELSE>	
+	<!--- error --->
 </CFIF>
