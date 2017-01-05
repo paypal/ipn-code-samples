@@ -4,7 +4,7 @@
 <CFSET requestData = getHTTPRequestData() />
 
 <!--- add 'cmd' and post back to PayPal system to validate --->
-<CFHTTP url="https://www.paypal.com/cgi-bin/webscr?cmd=_notify-validate&#requestData.content#" >
+<CFHTTP url="https://www.paypal.com/cgi-bin/webscr?cmd=_notify-validate&#URLEncodedFormat(requestData.content)#" >
 	<cfhttpparam type="header"  name="Host" value="www.paypal.com"> 
 </CFHTTP>
 
