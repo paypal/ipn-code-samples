@@ -119,7 +119,7 @@ class PaypalIPN
         }
         curl_setopt($ch, CURLOPT_FORBID_REUSE, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Connection: Close']);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
         $res = curl_exec($ch);
         if ( ! ($res)) {
             $errno = curl_errno($ch);
