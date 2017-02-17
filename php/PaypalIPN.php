@@ -78,13 +78,8 @@ class PaypalIPN
         foreach ($raw_post_array as $keyval) {
             $keyval = explode('=', $keyval);
             if (count($keyval) == 2) {
-                // Since we do not want the plus in the datetime string to be encoded to a space, we manually encode it.
-                if ($keyval[0] === 'payment_date') {
-                    if (substr_count($keyval[1], '+') === 1) {
-                        $keyval[1] = str_replace('+', '%2B', $keyval[1]);
-                    }
-                }
-                $myPost[$keyval[0]] = urldecode($keyval[1]);
+                $myPost[$keyval[0]] = rawurldecode($keyval[1]);
+                $_POST[$keyval[0]] = $myPost[$keyval[0]];
             }
         }
 
@@ -96,9 +91,9 @@ class PaypalIPN
         }
         foreach ($myPost as $key => $value) {
             if ($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1) {
-                $value = urlencode(stripslashes($value));
+                $value = rawurlencode(stripslashes($value));
             } else {
-                $value = urlencode($value);
+                $value = rawurlencode($value);
             }
             $req .= "&$key=$value";
         }
