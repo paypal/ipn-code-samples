@@ -81,11 +81,10 @@ class PaypalIPN
                 // Keep plus in email addresses.
                 if (filter_var(rawurldecode($keyval[1]), FILTER_VALIDATE_EMAIL)) {
                     $myPost[$keyval[0]] = rawurldecode($keyval[1]);
-                    $_POST[$keyval[0]] = $myPost[$keyval[0]];
                 } else {
                     $myPost[$keyval[0]] = urldecode($keyval[1]);
-                    $_POST[$keyval[0]] = $myPost[$keyval[0]];
                 }
+                $_POST[$keyval[0]] = $myPost[$keyval[0]];
             }
         }
 
