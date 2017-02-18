@@ -51,7 +51,7 @@ class PaypalIPN
      */
     public function getPaypalUri()
     {
-        if ($this->use_sandbox) {
+        if (($this->use_sandbox) || ($_POST["test_ipn"] == 1)) {
             return self::SANDBOX_VERIFY_URI;
         } else {
             return self::VERIFY_URI;
