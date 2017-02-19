@@ -32,6 +32,7 @@ $data_text = "";
 foreach ($_POST as $key => $value) {
     $data_text .= $key . " = " . $value . "\r\n";
 }
+
 $test_text = "";
 if ($enable_sandbox || $_POST["test_ipn"] == 1) {
     $test_text = "Test ";
