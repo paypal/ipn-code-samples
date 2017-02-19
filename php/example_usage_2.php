@@ -20,27 +20,18 @@ $log_file_dir = __DIR__ . "/logs";
 
 
 
-date_default_timezone_set("America/Los_Angeles");
-list($year, $month, $day, $hour, $minute, $second, $timezone) = explode(":", date("Y:m:d:H:i:s:T"));
-$date = $year . "-" . $month . "-" . $day;
-$timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
-$dated_log_file_dir = $log_file_dir . "/" . $year . "/" . $month;
-
 use PaypalIPN;
 $ipn = new PaypalIPN();
-
 if ($enable_sandbox) {
     $ipn->useSandbox();
 }
-
 $verified = $ipn->verifyIPN();
 
-$data_text = "";
 ksort($_POST);
+$data_text = "";
 foreach ($_POST as $key => $value) {
     $data_text .= $key . " = " . $value . "\r\n";
 }
-
 $test_text = "";
 if ($enable_sandbox || $_POST["test_ipn"] == 1) {
     $test_text = "Test ";
@@ -54,6 +45,12 @@ foreach ($my_email_addresses as $a) {
         break;
     }
 }
+
+date_default_timezone_set("America/Los_Angeles");
+list($year, $month, $day, $hour, $minute, $second, $timezone) = explode(":", date("Y:m:d:H:i:s:T"));
+$date = $year . "-" . $month . "-" . $day;
+$timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
+$dated_log_file_dir = $log_file_dir . "/" . $year . "/" . $month;
 
 if ($save_log_file) {
     // Create log file directory
