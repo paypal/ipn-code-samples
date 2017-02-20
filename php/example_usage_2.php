@@ -27,14 +27,13 @@ if ($enable_sandbox) {
 }
 $verified = $ipn->verifyIPN();
 
-ksort($_POST);
 $data_text = "";
 foreach ($_POST as $key => $value) {
     $data_text .= $key . " = " . $value . "\r\n";
 }
 
 $test_text = "";
-if ($enable_sandbox || $_POST["test_ipn"] == 1) {
+if ($enable_sandbox) {
     $test_text = "Test ";
 }
 
@@ -52,6 +51,35 @@ list($year, $month, $day, $hour, $minute, $second, $timezone) = explode(":", dat
 $date = $year . "-" . $month . "-" . $day;
 $timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
 $dated_log_file_dir = $log_file_dir . "/" . $year . "/" . $month;
+
+$paypal_ipn_status = "VERIFICATION FAILED";
+if ($verified) {
+    $paypal_ipn_status = "RECEIVER EMAIL MISMATCH";
+    if ($receiver_email_found) {
+        $paypal_ipn_status = "Completed Successfully";
+
+
+        // Process IPN
+        // A list of variables are available here:
+        // https://developer.paypal.com/webapps/developer/docs/classic/ipn/integration-guide/IPNandPDTVariables/
+
+        // This is an example for sending an automated email to the customer when they purchases an item for a specific amount:
+        if ($_POST["item_name"] == "Example Item" && $_POST["mc_gross"] == 49.99 && $_POST["mc_currency"] == "USD" && $_POST["payment_status"] == "Completed") {
+            $email_to = $_POST["first_name"] . " " . $_POST["last_name"] . " <" . $_POST["payer_email"] . ">";
+            $email_subject = $test_text . "Completed order for: " . $_POST["item_name"];
+            $email_body = "Thank you for purchasing " . $_POST["item_name"] . "." . "\r\n" . "\r\n" . "This is an example email only." . "\r\n" . "\r\n" . "Thank you.";
+            mail($email_to, $email_subject, $email_body, "From: " . $from_email_address);
+        }
+
+
+    }
+} elseif ($enable_sandbox) {
+    if ($_POST["test_ipn"] !== 1) {
+        $paypal_ipn_status = "RECEIVED FROM LIVE";
+    }
+} elseif ($_POST["test_ipn"] == 1) {
+    $paypal_ipn_status = "RECEIVED FROM SANDBOX";
+}
 
 if ($save_log_file) {
     // Create log file directory
@@ -77,51 +105,13 @@ if ($save_log_file) {
             $save_log_file = false;
         }
     }
+    // Save data to text file
+    file_put_contents($dated_log_file_dir . "/" . $test_text . "paypal_ipn_" . $date . ".txt", "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text . "\r\n", FILE_APPEND);
 }
 
-if ($verified) {
-    if ($save_log_file) {
-        // Save data to text file
-        if ($receiver_email_found) {
-            file_put_contents($dated_log_file_dir . "/" . $test_text . "paypal_ipn_" . $date . ".txt", "paypal_ipn_date = " . $timestamp . "\r\n" . "paypal_ipn_status = Completed Successfully" . "\r\n" . $data_text . "\r\n", FILE_APPEND);
-        } else {
-            file_put_contents($dated_log_file_dir . "/" . $test_text . "paypal_ipn_" . $date . ".txt", "paypal_ipn_date = " . $timestamp . "\r\n" . "paypal_ipn_status = RECEIVER EMAIL MISMATCH" . "\r\n" . $data_text . "\r\n", FILE_APPEND);
-        }
-    }
-    if ($receiver_email_found) {
-
-
-        // Process IPN
-        // A list of variables are available here:
-        // https://developer.paypal.com/webapps/developer/docs/classic/ipn/integration-guide/IPNandPDTVariables/
-
-        // This is an example for sending an automated email to the customer when they purchases an item for a specific amount:
-        if ($_POST["item_name"] == "Example Item" && $_POST["mc_gross"] == 49.99 && $_POST["mc_currency"] == "USD" && $_POST["payment_status"] == "Completed") {
-            $email_to = $_POST["first_name"] . " " . $_POST["last_name"] . " <" . $_POST["payer_email"] . ">";
-            $email_subject = $test_text . "Completed order for: " . $_POST["item_name"];
-            $email_body = "Thank you for purchasing " . $_POST["item_name"] . "." . "\r\n" . "\r\n" . "This is an example email only." . "\r\n" . "\r\n" . "Thank you.";
-            mail($email_to, $email_subject, $email_body, "From: " . $from_email_address);
-        }
-
-
-    }
-    if ($send_confirmation_email) {
-        // Send confirmation email
-        if ($receiver_email_found) {
-            mail($confirmation_email_address, $test_text . "PayPal IPN : Completed Successfully", "paypal_ipn_date = " . $timestamp . "\r\n" . "paypal_ipn_status = Completed Successfully" . "\r\n" . $data_text, "From: " . $from_email_address);
-        } else {
-            mail($confirmation_email_address, $test_text . "PayPal IPN : RECEIVER EMAIL MISMATCH", "paypal_ipn_date = " . $timestamp . "\r\n" . "paypal_ipn_status = RECEIVER EMAIL MISMATCH" . "\r\n" . $data_text, "From: " . $from_email_address);
-        }
-    }
-} else {
-    if ($save_log_file) {
-        // Save data to text file
-        file_put_contents($dated_log_file_dir . "/" . $test_text . "paypal_ipn_" . $date . ".txt", "paypal_ipn_date = " . $timestamp . "\r\n" . "paypal_ipn_status = VERIFICATION FAILED" . "\r\n" . $data_text . "\r\n", FILE_APPEND);
-    }
-    if ($send_confirmation_email) {
-        // Send confirmation email
-        mail($confirmation_email_address, $test_text . "PayPal IPN : VERIFICATION FAILED", "paypal_ipn_date = " . $timestamp . "\r\n" . "paypal_ipn_status = VERIFICATION FAILED" . "\r\n" . $data_text, "From: " . $from_email_address);
-    }
+if ($send_confirmation_email) {
+    // Send confirmation email
+    mail($confirmation_email_address, $test_text . "PayPal IPN : " . $paypal_ipn_status, "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text, "From: " . $from_email_address);
 }
 
 // Reply with an empty 200 response to indicate to paypal the IPN was received correctly
