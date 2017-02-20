@@ -87,6 +87,7 @@ class PaypalIPN
                 $_POST[$keyval[0]] = $myPost[$keyval[0]];
             }
         }
+        ksort($_POST);
 
         // Build the body of the verification post request, adding the _notify-validate command.
         $req = 'cmd=_notify-validate';
