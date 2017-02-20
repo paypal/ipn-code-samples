@@ -75,10 +75,10 @@ if ($verified) {
     }
 } elseif ($enable_sandbox) {
     if ($_POST["test_ipn"] != 1) {
-        $paypal_ipn_status = "RECEIVED FROM LIVE";
+        $paypal_ipn_status = "RECEIVED FROM LIVE WHILE SANDBOXED";
     }
 } elseif ($_POST["test_ipn"] == 1) {
-    $paypal_ipn_status = "RECEIVED FROM SANDBOX";
+    $paypal_ipn_status = "RECEIVED FROM SANDBOX WHILE LIVE";
 }
 
 if ($save_log_file) {
