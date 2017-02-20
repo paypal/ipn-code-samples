@@ -33,7 +33,7 @@ foreach ($_POST as $key => $value) {
 }
 
 $test_text = "";
-if ($enable_sandbox) {
+if ($enable_sandbox || $_POST["test_ipn"] == 1) {
     $test_text = "Test ";
 }
 
