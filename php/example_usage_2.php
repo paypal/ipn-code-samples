@@ -74,7 +74,7 @@ if ($verified) {
 
     }
 } elseif ($enable_sandbox) {
-    if ($_POST["test_ipn"] !== 1) {
+    if ($_POST["test_ipn"] != 1) {
         $paypal_ipn_status = "RECEIVED FROM LIVE";
     }
 } elseif ($_POST["test_ipn"] == 1) {
