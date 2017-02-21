@@ -78,8 +78,8 @@ class PaypalIPN
         foreach ($raw_post_array as $keyval) {
             $keyval = explode('=', $keyval);
             if (count($keyval) == 2) {
-                // Keep plus in email addresses.
                 if (filter_var(rawurldecode($keyval[1]), FILTER_VALIDATE_EMAIL)) {
+                    // Keep plus in email addresses.
                     $myPost[$keyval[0]] = rawurldecode($keyval[1]);
                 } else {
                     $myPost[$keyval[0]] = urldecode($keyval[1]);
