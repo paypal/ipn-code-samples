@@ -4,7 +4,7 @@
 $enable_sandbox = true;
 
 // Use this to specify all of the email addresses that you have attached to paypal:
-$my_email_addresses = array("my_email_address@gmail.com", "my_email_address2@gmail.com", "my_email_address3@gmail.com", "my_email_address4@gmail.com");
+$my_email_addresses = array("my_email_address@gmail.com", "my_email_address2@gmail.com", "my_email_address3@gmail.com");
 
 // Set this to true to send a confirmation email:
 $send_confirmation_email = true;
