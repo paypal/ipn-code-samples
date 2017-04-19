@@ -1,4 +1,8 @@
-<?php require('PaypalIPN.php');
+<?php 
+
+namespace Listener;
+
+require('PaypalIPN.php');
 
 use PaypalIPN;
 
