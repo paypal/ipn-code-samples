@@ -1,4 +1,6 @@
 <?php
+namespace Listener;
+require('PaypalIPN.php');
 
 // Set this to true to use the sandbox endpoint during testing:
 $enable_sandbox = true;
@@ -20,8 +22,6 @@ $log_file_dir = __DIR__ . "/logs";
 
 
 
-namespace Listener;
-require('PaypalIPN.php');
 use PaypalIPN;
 $ipn = new PaypalIPN();
 if ($enable_sandbox) {
