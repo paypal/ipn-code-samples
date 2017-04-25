@@ -15,7 +15,7 @@ $from_email_address = "My Name <my_email_address@gmail.com>";
 $save_log_file = true;
 $log_file_dir = __DIR__ . "/logs";
 
-// Here is some information on how to configure sendmail:
+// Here is some information on how to configure mail:
 // http://php.net/manual/en/function.mail.php#118210
 
 
