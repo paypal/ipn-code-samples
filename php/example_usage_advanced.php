@@ -1,4 +1,6 @@
-<?php namespace Listener;
+<?php
+
+namespace Listener;
 
 // Set this to true to use the sandbox endpoint during testing:
 $enable_sandbox = true;
