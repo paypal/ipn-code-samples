@@ -1,6 +1,4 @@
-<?php 
-
-namespace Listener;
+<?php namespace Listener;
 
 require('PaypalIPN.php');
 
