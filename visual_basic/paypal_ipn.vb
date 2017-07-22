@@ -28,6 +28,9 @@ req.ContentLength = strRequest.Length
 Dim streamOut As StreamWriter = New StreamWriter(req.GetRequestStream(), Encoding.ASCII)
 streamOut.Write(strRequest)
 streamOut.Close()
+    
+ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12     
+    
 Dim streamIn As StreamReader = New StreamReader(req.GetResponse().GetResponseStream())
 Dim strResponse As String = streamIn.ReadToEnd()
 streamIn.Close()
