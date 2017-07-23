@@ -79,7 +79,7 @@ class PaypalIPN
             $keyval = explode('=', $keyval);
             if (count($keyval) == 2) {
                 // Since we do not want the plus in the datetime string to be encoded to a space, we manually encode it.
-                if ($keyval[0] === 'payment_date') {
+                if ($keyval[0] === 'payment_date' || $keyval[0] === 'business' || $keyval[0] === 'payer_email' || $keyval[0] === 'receiver_email') {
                     if (substr_count($keyval[1], '+') === 1) {
                         $keyval[1] = str_replace('+', '%2B', $keyval[1]);
                     }
