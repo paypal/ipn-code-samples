@@ -69,7 +69,7 @@ if ($verified) {
             $email_to = $_POST["first_name"] . " " . $_POST["last_name"] . " <" . $_POST["payer_email"] . ">";
             $email_subject = $test_text . "Completed order for: " . $_POST["item_name"];
             $email_body = "Thank you for purchasing " . $_POST["item_name"] . "." . "\r\n" . "\r\n" . "This is an example email only." . "\r\n" . "\r\n" . "Thank you.";
-            mail($email_to, $email_subject, $email_body, "From: " . $from_email_address);
+            mail($email_to, $email_subject, $email_body, "From: " . $from_email_address . "\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit");
         }
 
 
@@ -108,13 +108,15 @@ if ($save_log_file) {
     }
     if ($save_log_file) {
         // Save data to text file
-        file_put_contents($dated_log_file_dir . "/" . $test_text . "paypal_ipn_" . $date . ".txt", "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text . "\r\n", FILE_APPEND);
+        $data_file = "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text . "\r\n";
+        $data_file = mb_convert_encoding($data_file, "UTF-8", "auto");
+        file_put_contents($dated_log_file_dir . "/" . $test_text . "paypal_ipn_" . $date . ".txt", $data_file, FILE_APPEND);
     }
 }
 
 if ($send_confirmation_email) {
     // Send confirmation email
-    mail($confirmation_email_address, $test_text . "PayPal IPN : " . $paypal_ipn_status, "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text, "From: " . $from_email_address);
+    mail($confirmation_email_address, $test_text . "PayPal IPN : " . $paypal_ipn_status, "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text, "From: " . $from_email_address . "\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit");
 }
 
 // Reply with an empty 200 response to indicate to paypal the IPN was received correctly
