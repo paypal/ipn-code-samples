@@ -16,7 +16,7 @@ class PaymentNotificationsController < ApplicationController
     else
       # error
     end
-    render :nothing => true
+    render nothing: true
   end
   protected
   def validate_IPN_notification(raw)
@@ -24,7 +24,7 @@ class PaymentNotificationsController < ApplicationController
     http = Net::HTTP.new(uri.host, uri.port)
     http.open_timeout = 60
     http.read_timeout = 60
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    http.verify_mode = OpenSSL::SSL::VERIFY_PEER
     http.use_ssl = true
     response = http.post(uri.request_uri, raw,
                          'Content-Length' => "#{raw.size}",
