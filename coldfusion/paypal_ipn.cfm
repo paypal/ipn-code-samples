@@ -1,48 +1,59 @@
-<!--- COLDFUSION   --->
+<cfparam name="paypalIpnUrl" default="https://ipnpb.paypal.com/cgi-bin/webscr" />
+<cfset isTest = true />
+<cfif isTest>
+  <cfset paypalIpnUrl = "https://ipnpb.sandbox.paypal.com/cgi-bin/webscr" />
+</cfif>
 
 <!--- read post from PayPal system --->
-<CFSET requestData = getHTTPRequestData() />
+<cfset requestData=getHTTPRequestData() />
+<!--- Test Output --->
+<cffile action="write" file="#expandPath('./request_data.txt')#" output="#URLEncodedFormat(requestData.content)#" />
 
 <!--- add 'cmd' and post back to PayPal system to validate --->
-<CFHTTP url="https://www.paypal.com/cgi-bin/webscr?cmd=_notify-validate&#URLEncodedFormat(requestData.content)#" >
-	<cfhttpparam type="header"  name="Host" value="www.paypal.com"> 
-</CFHTTP>
+<cfhttp url="#paypalIpnUrl#?cmd=_notify-validate&#requestData.content#">
+  <cfhttpparam type="header" name="Host" value="www.paypal.com" />
+</cfhttp>
 
- 
+
 <!--- check notification validation --->
-<CFIF #CFHTTP.FileContent# is "VERIFIED">
-    <!--- assign posted variables to local variables --->
-    <CFIF IsDefined("FORM.item_name")>
-        <CFSET item_name=FORM.item_name>
-    </CFIF>    
-    <!--- check that payment_status=Completed --->
-    <CFIF IsDefined("FORM.payment_status")>
-        <CFSET payment_status=FORM.payment_status>
-    </CFIF>    
-    <CFIF IsDefined("FORM.mc_gross")>
-        <CFSET payment_amount=FORM.mc_gross>
-    </CFIF> 
-    <!--- check that payment_amount/payment_currency are correct --->
-    <CFIF IsDefined("FORM.mc_currency")>
-        <CFSET payment_currency=FORM.mc_currency>
-    </CFIF>        
-    <CFIF IsDefined("FORM.txn_id")>
-        <CFSET txn_id=FORM.txn_id>
-    </CFIF>
-    <!--- check that txn_id has not been previously processed --->
-    <!--- check that receiver_email is your Primary PayPal email --->	
-    <CFIF IsDefined("FORM.receiver_email")>
-        <CFSET receiver_email=FORM.receiver_email>
-    </CFIF>        
-    <CFIF IsDefined("FORM.payer_email")>
-        <CFSET payer_email=FORM.payer_email>
-    </CFIF>    
-    <CFIF IsDefined("FORM.item_number")>
-		<CFSET item_number=FORM.item_number>
-    </CFIF>
-	
-<CFELSEIF #CFHTTP.FileContent# is "INVALID">
-	<!--- log for investigation --->
-<CFELSE>	
-	<!--- error --->
-</CFIF>
+<cfif CFHTTP.FileContent is "VERIFIED">
+  
+  <!--- assign posted variables to local variables --->
+  <cfif IsDefined("FORM.item_name")>
+    <cfset item_name=FORM.item_name />
+  </cfif>
+  <!--- check that payment_status=Completed --->
+  <cfif IsDefined("FORM.payment_status")>
+    <cfset payment_status=FORM.payment_status />
+  </cfif>
+  <cfif IsDefined("FORM.mc_gross")>
+    <cfset payment_amount=FORM.mc_gross />
+  </cfif>
+  <!--- check that payment_amount/payment_currency are correct --->
+  <cfif IsDefined("FORM.mc_currency")>
+    <cfset payment_currency=FORM.mc_currency />
+  </cfif>
+  <cfif IsDefined("FORM.txn_id")>
+    <cfset txn_id=FORM.txn_id />
+  </cfif>
+  <!--- check that txn_id has not been previously processed --->
+  <!--- check that receiver_email is your Primary PayPal email --->
+  <cfif IsDefined("FORM.receiver_email")>
+    <cfset receiver_email=FORM.receiver_email />
+  </cfif>
+  <cfif IsDefined("FORM.payer_email")>
+    <cfset payer_email=FORM.payer_email />
+  </cfif>
+  <cfif IsDefined("FORM.item_number")>
+    <cfset item_number=FORM.item_number />
+  </cfif>
+  <!--- Test Output --->
+  <cffile action="append" file="#expandPath('./valid_log.txt')#" output="#now()#-#CFHTTP.FileContent#" />
+<cfelseif CFHTTP.FileContent is "INVALID">
+   <!--- log for investigation --->
+   <cffile action="append" file="#expandPath('./invalid_log.txt')#" output="#now()#-#CFHTTP.FileContent#" />
+<cfelse>
+  <!--- error --->
+  <!--- Test Output --->
+  <cffile action="append" file="#expandPath('./error_log.txt')#" output="#now()#-#CFHTTP.FileContent#" />
+</cfif>
