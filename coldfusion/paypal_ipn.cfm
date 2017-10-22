@@ -39,7 +39,10 @@
   <!--- check that txn_id has not been previously processed --->
   <!--- check that receiver_email is your Primary PayPal email --->
   <cfif IsDefined("FORM.receiver_email")>
-    <cfset receiver_email=FORM.receiver_email />
+    <!--- IMPORTANT!!! The sandbox version of IPN Simulator does not encode the email.
+    When you switch to production, it does! You need to decode the email address if you 
+    are to validate it in a production setting.) --->
+    <cfset receiver_email=URLDecode(FORM.receiver_email) />
   </cfif>
   <cfif IsDefined("FORM.payer_email")>
     <cfset payer_email=FORM.payer_email />
