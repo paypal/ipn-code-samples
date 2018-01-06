@@ -30,6 +30,7 @@ if ($enable_sandbox) {
 }
 $verified = $ipn->verifyIPN();
 
+ksort($_POST);
 $data_text = "";
 foreach ($_POST as $key => $value) {
     $data_text .= $key . " = " . $value . "\r\n";
