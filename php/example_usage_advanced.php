@@ -8,8 +8,10 @@ $my_email_addresses = array("my_email_address@gmail.com", "my_email_address2@gma
 
 // Set this to true to send a confirmation email:
 $send_confirmation_email = true;
-$confirmation_email_address = "My Name <my_email_address@gmail.com>";
-$from_email_address = "My Name <my_email_address@gmail.com>";
+$confirmation_email_name = "My Name";
+$confirmation_email_address = "my_email_address@gmail.com";
+$from_email_name = "My Name";
+$from_email_address = "my_email_address@gmail.com";
 
 // Set this to true to save a log file:
 $save_log_file = true;
@@ -20,7 +22,7 @@ $log_file_dir = __DIR__ . "/logs";
 
 
 
-require('PaypalIPN.php');
+require("PaypalIPN.php");
 use PaypalIPN;
 $ipn = new PaypalIPN();
 if ($enable_sandbox) {
@@ -53,6 +55,33 @@ $date = $year . "-" . $month . "-" . $day;
 $timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
 $dated_log_file_dir = $log_file_dir . "/" . $year . "/" . $month;
 
+function send_email($name = "", $address = null, $subject = "", $body = "", $from_name = null, $from_address = null, $html = true) {
+    if (is_null($address)) {
+        return false;
+    }
+    if (is_null($from_name)) {
+        $from_name = $GLOBALS["from_email_name"];
+    }
+    if (is_null($from_address)) {
+        $from_address = $GLOBALS["from_email_address"];
+    }
+    $send_email_to = "=?UTF-8?B?" . base64_encode($name) . "?= <" . $address . ">";
+    $send_email_header  = "MIME-Version: 1.0" . "\r\n";
+    if ($html) {
+        $body = "<html><head><title>" . $subject . "</title></head><body>" . $body . "</body></html>";
+        $send_email_header .= "Content-type: text/html; charset=UTF-8" . "\r\n";
+    } else {
+        $send_email_header .= "Content-type: text/plain; charset=UTF-8" . "\r\n";
+    }
+    $send_email_header .= "To: " . $send_email_to . "\r\n";
+    $send_email_header .= "From: " . "=?UTF-8?B?" . base64_encode($from_name) . "?= <" . $from_address . ">" . "\r\n";
+    return mail($send_email_to, "=?UTF-8?B?" . base64_encode($subject) . "?=", $body, $send_email_header);
+}
+
+function send_plain_email($name = "", $address = null, $subject = "", $body = "", $from_name = null, $from_address = null, $html = false) {
+    return send_email($name, $address, $subject, $body, $from_name, $from_address, $html);
+}
+
 $paypal_ipn_status = "VERIFICATION FAILED";
 if ($verified) {
     $paypal_ipn_status = "RECEIVER EMAIL MISMATCH";
@@ -66,10 +95,11 @@ if ($verified) {
 
         // This is an example for sending an automated email to the customer when they purchases an item for a specific amount:
         if ($_POST["item_name"] == "Example Item" && $_POST["mc_gross"] == 49.99 && $_POST["mc_currency"] == "USD" && $_POST["payment_status"] == "Completed") {
-            $email_to = $_POST["first_name"] . " " . $_POST["last_name"] . " <" . $_POST["payer_email"] . ">";
+            $email_name = $_POST["first_name"] . " " . $_POST["last_name"];
+            $email_address = $_POST["payer_email"];
             $email_subject = $test_text . "Completed order for: " . $_POST["item_name"];
-            $email_body = "Thank you for purchasing " . $_POST["item_name"] . "." . "\r\n" . "\r\n" . "This is an example email only." . "\r\n" . "\r\n" . "Thank you.";
-            mail($email_to, $email_subject, $email_body, "From: " . $from_email_address);
+            $email_body = "<p>Thank you for purchasing " . $_POST["item_name"] . ".<BR><BR>This is an example email only.<BR><BR>Thank you.</p>";
+            send_email($email_name, $email_address, $email_subject, $email_body);
         }
 
 
@@ -114,7 +144,11 @@ if ($save_log_file) {
 
 if ($send_confirmation_email) {
     // Send confirmation email
-    mail($confirmation_email_address, $test_text . "PayPal IPN : " . $paypal_ipn_status, "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text, "From: " . $from_email_address);
+    $email_name = $confirmation_email_name;
+    $email_address = $confirmation_email_address;
+    $email_subject = $test_text . "PayPal IPN : " . $paypal_ipn_status;
+    $email_body = "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text;
+    send_plain_email($email_name, $email_address, $email_subject, $email_body);
 }
 
 // Reply with an empty 200 response to indicate to paypal the IPN was received correctly
