@@ -72,14 +72,13 @@ class PaypalIPN
             throw new Exception("Missing POST Data");
         }
 
-        $get_magic_quotes_exists = false;
-        if (function_exists('get_magic_quotes_gpc')) {
-            $get_magic_quotes_exists = true;
-        }
-
         $raw_post_data = file_get_contents('php://input');
         $raw_post_array = explode('&', $raw_post_data);
         $myPost = array();
+        $magic_quotes_enabled = false;
+        if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc() == 1) {
+            $magic_quotes_enabled = true;
+        }
         foreach ($raw_post_array as $keyval) {
             $keyval = explode('=', $keyval);
             if (count($keyval) == 2) {
@@ -91,7 +90,7 @@ class PaypalIPN
                     // Convert plus signs to spaces
                     $myPost[$keyval[0]] = urldecode($keyval[1]);
                 }
-                if ($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1) {
+                if ($magic_quotes_enabled) {
                     $myPost[$keyval[0]] = stripslashes($myPost[$keyval[0]]);
                 }
             }
