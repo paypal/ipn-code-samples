@@ -63,7 +63,7 @@ class PaypalIPN
      * Verification Function
      * Sends the incoming post data back to PayPal using the cURL library.
      *
-     * @return array or bool false
+     * @return array or false
      * @throws Exception
      */
     public function verifyIPN()
