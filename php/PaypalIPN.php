@@ -72,6 +72,11 @@ class PaypalIPN
             throw new Exception("Missing POST Data");
         }
 
+        $get_magic_quotes_exists = false;
+        if (function_exists('get_magic_quotes_gpc')) {
+            $get_magic_quotes_exists = true;
+        }
+
         $raw_post_data = file_get_contents('php://input');
         $raw_post_array = explode('&', $raw_post_data);
         $myPost = array();
@@ -86,21 +91,16 @@ class PaypalIPN
                     // Convert plus signs to spaces
                     $myPost[$keyval[0]] = urldecode($keyval[1]);
                 }
+                if ($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1) {
+                    $myPost[$keyval[0]] = stripslashes($myPost[$keyval[0]]);
+                }
             }
         }
 
         // Build the body of the verification post request, adding the _notify-validate command.
         $req = 'cmd=_notify-validate';
-        $get_magic_quotes_exists = false;
-        if (function_exists('get_magic_quotes_gpc')) {
-            $get_magic_quotes_exists = true;
-        }
         foreach ($myPost as $key => $value) {
-            if ($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1) {
-                $value = rawurlencode(stripslashes($value));
-            } else {
-                $value = rawurlencode($value);
-            }
+            $value = rawurlencode($value);
             $req .= "&$key=$value";
         }
 
