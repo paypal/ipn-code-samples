@@ -63,7 +63,7 @@ class PaypalIPN
      * Verification Function
      * Sends the incoming post data back to PayPal using the cURL library.
      *
-     * @return bool
+     * @return array or bool false
      * @throws Exception
      */
     public function verifyIPN()
@@ -78,13 +78,14 @@ class PaypalIPN
         foreach ($raw_post_array as $keyval) {
             $keyval = explode('=', $keyval);
             if (count($keyval) == 2) {
-                // Since we do not want the plus in the datetime string to be encoded to a space, we manually encode it.
-                if ($keyval[0] === 'payment_date') {
-                    if (substr_count($keyval[1], '+') === 1) {
-                        $keyval[1] = str_replace('+', '%2B', $keyval[1]);
-                    }
+                // Since we do not want the plus signs in the date and email strings to be encoded to a space, we use rawurldecode instead of urldecode
+                if (($keyval[0] === 'payment_date' && substr_count($keyval[1], '+') === 1) || strpos(rawurldecode($keyval[1]), ' ') !== false || filter_var(rawurldecode($keyval[1]), FILTER_VALIDATE_EMAIL)) {
+                    // Keep plus signs
+                    $myPost[$keyval[0]] = rawurldecode($keyval[1]);
+                } else {
+                    // Convert plus signs to spaces
+                    $myPost[$keyval[0]] = urldecode($keyval[1]);
                 }
-                $myPost[$keyval[0]] = urldecode($keyval[1]);
             }
         }
 
@@ -96,9 +97,9 @@ class PaypalIPN
         }
         foreach ($myPost as $key => $value) {
             if ($get_magic_quotes_exists == true && get_magic_quotes_gpc() == 1) {
-                $value = urlencode(stripslashes($value));
+                $value = rawurlencode(stripslashes($value));
             } else {
-                $value = urlencode($value);
+                $value = rawurlencode($value);
             }
             $req .= "&$key=$value";
         }
@@ -138,9 +139,8 @@ class PaypalIPN
 
         // Check if PayPal verifies the IPN data, and if so, return true.
         if ($res == self::VALID) {
-            return true;
-        } else {
-            return false;
+            return $myPost;
         }
+        return false;
     }
 }
