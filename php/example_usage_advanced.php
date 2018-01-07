@@ -80,16 +80,9 @@ $date = $year . "-" . $month . "-" . $day;
 $timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
 $dated_log_file_dir = $log_file_dir . "/" . $test_text . $year . "/" . $test_text . $month;
 
-function send_email($name = "", $address = null, $subject = "", $body = "", $from_name = null, $from_address = null, $html = true) {
-    if (is_null($address)) {
-        return false;
-    }
-    if (is_null($from_name)) {
-        $from_name = $GLOBALS["from_email_name"];
-    }
-    if (is_null($from_address)) {
-        $from_address = $GLOBALS["from_email_address"];
-    }
+function send_email($name = "", $address = "", $subject = "", $body = "", $from_name = null, $from_address = null, $html = true) {
+    if (is_null($from_name)) { $from_name = $GLOBALS["from_email_name"]; }
+    if (is_null($from_address)) { $from_address = $GLOBALS["from_email_address"]; }
     $send_email_to = "=?UTF-8?B?" . base64_encode($name) . "?= <" . $address . ">";
     $send_email_from = "=?UTF-8?B?" . base64_encode($from_name) . "?= <" . $from_address . ">";
     $send_email_header  = "MIME-Version: 1.0" . "\r\n";
@@ -104,7 +97,7 @@ function send_email($name = "", $address = null, $subject = "", $body = "", $fro
     return mail($send_email_to, "=?UTF-8?B?" . base64_encode($subject) . "?=", $body, $send_email_header);
 }
 
-function send_plain_email($name = "", $address = null, $subject = "", $body = "", $from_name = null, $from_address = null, $html = false) {
+function send_plain_email($name = "", $address = "", $subject = "", $body = "", $from_name = null, $from_address = null, $html = false) {
     return send_email($name, $address, $subject, $body, $from_name, $from_address, $html);
 }
 
