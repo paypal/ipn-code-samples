@@ -137,7 +137,7 @@ class PaypalIPN
 
         curl_close($ch);
 
-        // Check if PayPal verifies the IPN data, and if so, return true.
+        // Check if PayPal verifies the IPN data, and if so, return data array.
         if ($res == self::VALID) {
             return $myPost;
         }
