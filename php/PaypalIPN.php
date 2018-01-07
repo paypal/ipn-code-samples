@@ -83,7 +83,7 @@ class PaypalIPN
             $keyval = explode('=', $keyval);
             if (count($keyval) == 2) {
                 // Since we do not want the plus signs in the date and email strings to be encoded to a space, we use rawurldecode instead of urldecode
-                if (($keyval[0] === 'payment_date' && substr_count($keyval[1], '+') === 1) || strpos(rawurldecode($keyval[1]), ' ') !== false || filter_var($keyval[1], FILTER_VALIDATE_EMAIL)) {
+                if (($keyval[0] === 'payment_date' && substr_count($keyval[1], '+') === 1) || strpos(rawurldecode($keyval[1]), ' ') !== false || ($_POST["test_ipn"] == 1 && filter_var($keyval[1], FILTER_VALIDATE_EMAIL))) {
                     // Keep plus signs
                     $myPost[$keyval[0]] = rawurldecode($keyval[1]);
                 } else {
