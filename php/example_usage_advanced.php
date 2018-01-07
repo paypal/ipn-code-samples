@@ -152,11 +152,7 @@ if ($save_log_file) {
 
 if ($send_confirmation_email) {
     // Send confirmation email
-    $email_name = $confirmation_email_name;
-    $email_address = $confirmation_email_address;
-    $email_subject = $test_text . "PayPal IPN : " . $paypal_ipn_status;
-    $email_body = "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text;
-    send_plain_email($email_name, $email_address, $email_subject, $email_body);
+    send_plain_email($confirmation_email_name, $confirmation_email_address, $test_text . "PayPal IPN : " . $paypal_ipn_status, "paypal_ipn_status = " . $paypal_ipn_status . "\r\n" . "paypal_ipn_date = " . $timestamp . "\r\n" . $data_text);
 }
 
 // Reply with an empty 200 response to indicate to paypal the IPN was received correctly
