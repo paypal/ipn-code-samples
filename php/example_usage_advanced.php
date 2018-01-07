@@ -35,6 +35,7 @@ if (is_array($verified)) {
 } else {
     $DATA = $_POST;
 }
+ksort($DATA);
 
 $data_text = "";
 foreach ($DATA as $key => $value) {
