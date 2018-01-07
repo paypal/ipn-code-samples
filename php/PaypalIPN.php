@@ -89,9 +89,9 @@ class PaypalIPN
                 } else {
                     // Convert plus signs to spaces
                     $myPost[$keyval[0]] = urldecode($keyval[1]);
-                }
-                if ($magic_quotes_enabled) {
-                    $myPost[$keyval[0]] = stripslashes($myPost[$keyval[0]]);
+                    if ($magic_quotes_enabled) {
+                        $myPost[$keyval[0]] = stripslashes($myPost[$keyval[0]]);
+                    }
                 }
             }
         }
