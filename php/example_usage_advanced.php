@@ -60,7 +60,7 @@ date_default_timezone_set("America/Los_Angeles");
 list($year, $month, $day, $hour, $minute, $second, $timezone) = explode(":", date("Y:m:d:H:i:s:T"));
 $date = $year . "-" . $month . "-" . $day;
 $timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
-$dated_log_file_dir = $log_file_dir . "/" . $year . "/" . $month;
+$dated_log_file_dir = $log_file_dir . "/" . $test_text . $year . "/" . $test_text . $month;
 
 function send_email($name = "", $address = null, $subject = "", $body = "", $from_name = null, $from_address = null, $html = true) {
     if (is_null($address)) {
