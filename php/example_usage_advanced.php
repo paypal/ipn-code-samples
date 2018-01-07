@@ -30,20 +30,26 @@ if ($enable_sandbox) {
 }
 $verified = $ipn->verifyIPN();
 
+if (is_array($verified)) {
+    $DATA = $verified;
+} else {
+    $DATA = $_POST;
+}
+
 $data_text = "";
-foreach ($_POST as $key => $value) {
+foreach ($DATA as $key => $value) {
     $data_text .= $key . " = " . $value . "\r\n";
 }
 
 $test_text = "";
-if ($_POST["test_ipn"] == 1) {
+if ($DATA["test_ipn"] == 1) {
     $test_text = "Test ";
 }
 
 // Check the receiver email to see if it matches your list of paypal email addresses
 $receiver_email_found = false;
 foreach ($my_email_addresses as $a) {
-    if (strtolower($_POST["receiver_email"]) == strtolower($a)) {
+    if (strtolower($DATA["receiver_email"]) == strtolower($a)) {
         $receiver_email_found = true;
         break;
     }
@@ -94,21 +100,21 @@ if ($verified) {
         // https://developer.paypal.com/webapps/developer/docs/classic/ipn/integration-guide/IPNandPDTVariables/
 
         // This is an example for sending an automated email to the customer when they purchases an item for a specific amount:
-        if ($_POST["item_name"] == "Example Item" && $_POST["mc_gross"] == 49.99 && $_POST["mc_currency"] == "USD" && $_POST["payment_status"] == "Completed") {
-            $email_name = $_POST["first_name"] . " " . $_POST["last_name"];
-            $email_address = $_POST["payer_email"];
-            $email_subject = $test_text . "Completed order for: " . $_POST["item_name"];
-            $email_body = "<p>Thank you for purchasing " . $_POST["item_name"] . ".<BR><BR>This is an example email only.<BR><BR>Thank you.</p>";
+        if ($DATA["item_name"] == "Example Item" && $DATA["mc_gross"] == 49.99 && $DATA["mc_currency"] == "USD" && $DATA["payment_status"] == "Completed") {
+            $email_name = $DATA["first_name"] . " " . $DATA["last_name"];
+            $email_address = $DATA["payer_email"];
+            $email_subject = $test_text . "Completed order for: " . $DATA["item_name"];
+            $email_body = "<p>Thank you for purchasing " . $DATA["item_name"] . ".<BR><BR>This is an example email only.<BR><BR>Thank you.</p>";
             send_email($email_name, $email_address, $email_subject, $email_body);
         }
 
 
     }
 } elseif ($enable_sandbox) {
-    if ($_POST["test_ipn"] != 1) {
+    if ($DATA["test_ipn"] != 1) {
         $paypal_ipn_status = "RECEIVED FROM LIVE WHILE SANDBOXED";
     }
-} elseif ($_POST["test_ipn"] == 1) {
+} elseif ($DATA["test_ipn"] == 1) {
     $paypal_ipn_status = "RECEIVED FROM SANDBOX WHILE LIVE";
 }
 
