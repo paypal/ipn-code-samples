@@ -73,6 +73,7 @@ function send_email($name = "", $address = null, $subject = "", $body = "", $fro
         $from_address = $GLOBALS["from_email_address"];
     }
     $send_email_to = "=?UTF-8?B?" . base64_encode($name) . "?= <" . $address . ">";
+    $send_email_from = "=?UTF-8?B?" . base64_encode($from_name) . "?= <" . $from_address . ">";
     $send_email_header  = "MIME-Version: 1.0" . "\r\n";
     if ($html) {
         $body = "<html><head><title>" . $subject . "</title></head><body>" . $body . "</body></html>";
@@ -81,7 +82,7 @@ function send_email($name = "", $address = null, $subject = "", $body = "", $fro
         $send_email_header .= "Content-type: text/plain; charset=UTF-8" . "\r\n";
     }
     $send_email_header .= "To: " . $send_email_to . "\r\n";
-    $send_email_header .= "From: " . "=?UTF-8?B?" . base64_encode($from_name) . "?= <" . $from_address . ">" . "\r\n";
+    $send_email_header .= "From: " . $send_email_from . "\r\n";
     return mail($send_email_to, "=?UTF-8?B?" . base64_encode($subject) . "?=", $body, $send_email_header);
 }
 
