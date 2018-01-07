@@ -48,8 +48,8 @@ foreach ($DATA as $key => $value) {
 $raw_data_text = "";
 if ($log_raw_data) {
     $RAW_DATA = array();
-    foreach (explode('&', file_get_contents('php://input')) as $keyval) {
-        $keyval = explode('=', $keyval);
+    foreach (explode("&", file_get_contents("php://input")) as $keyval) {
+        $keyval = explode("=", $keyval);
         if (count($keyval) == 2) {
             $RAW_DATA[$keyval[0]] = $keyval[1];
         }
