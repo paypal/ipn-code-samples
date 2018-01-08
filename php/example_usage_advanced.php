@@ -113,8 +113,8 @@ function send_email($name = "", $address = "", $subject = "", $body = "", $from_
     return mail($send_email_to, "=?UTF-8?B?" . base64_encode($subject) . "?=", $body, $send_email_header);
 }
 
-function send_plain_email($name = "", $address = "", $subject = "", $body = "", $from_name = null, $from_address = null, $html = false) {
-    return send_email($name, $address, $subject, $body, $from_name, $from_address, $html);
+function send_plain_email($name = "", $address = "", $subject = "", $body = "", $from_name = null, $from_address = null) {
+    return send_email($name, $address, $subject, $body, $from_name, $from_address, false);
 }
 
 if ($process_ipn) {
