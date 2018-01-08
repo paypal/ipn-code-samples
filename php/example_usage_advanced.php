@@ -80,22 +80,6 @@ $date = $year . "-" . $month . "-" . $day;
 $timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
 $dated_log_file_dir = $log_file_dir . "/" . $test_text . $year . "/" . $test_text . $month;
 
-$process_ipn = false;
-$paypal_ipn_status = "VERIFICATION FAILED";
-if ($verified) {
-    $paypal_ipn_status = "RECEIVER EMAIL MISMATCH";
-    if ($receiver_email_found) {
-        $process_ipn = true;
-        $paypal_ipn_status = "Completed Successfully";
-    }
-} elseif ($enable_sandbox) {
-    if ($DATA["test_ipn"] != 1) {
-        $paypal_ipn_status = "RECEIVED FROM LIVE WHILE SANDBOXED";
-    }
-} elseif ($DATA["test_ipn"] == 1) {
-    $paypal_ipn_status = "RECEIVED FROM SANDBOX WHILE LIVE";
-}
-
 function send_email($name = "", $address = "", $subject = "", $body = "", $from_name = null, $from_address = null, $html = true) {
     if (is_null($from_name)) { $from_name = $GLOBALS["from_email_name"]; }
     if (is_null($from_address)) { $from_address = $GLOBALS["from_email_address"]; }
@@ -115,6 +99,22 @@ function send_email($name = "", $address = "", $subject = "", $body = "", $from_
 
 function send_plain_email($name = "", $address = "", $subject = "", $body = "", $from_name = null, $from_address = null, $html = false) {
     return send_email($name, $address, $subject, $body, $from_name, $from_address, $html);
+}
+
+$process_ipn = false;
+$paypal_ipn_status = "VERIFICATION FAILED";
+if ($verified) {
+    $paypal_ipn_status = "RECEIVER EMAIL MISMATCH";
+    if ($receiver_email_found) {
+        $process_ipn = true;
+        $paypal_ipn_status = "Completed Successfully";
+    }
+} elseif ($enable_sandbox) {
+    if ($DATA["test_ipn"] != 1) {
+        $paypal_ipn_status = "RECEIVED FROM LIVE WHILE SANDBOXED";
+    }
+} elseif ($DATA["test_ipn"] == 1) {
+    $paypal_ipn_status = "RECEIVED FROM SANDBOX WHILE LIVE";
 }
 
 if ($process_ipn) {
