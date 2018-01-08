@@ -4,14 +4,14 @@
 $enable_sandbox = true;
 
 // Use this to specify all of the email addresses that you have attached to paypal:
-$my_email_addresses = array("my_email_address@gmail.com", "my_email_address2@gmail.com", "my_email_address3@gmail.com");
+$my_email_addresses = array("seller@paypalsandbox.com", "seller2@paypalsandbox.com", "seller3@paypalsandbox.com");
 
 // Set this to true to send a confirmation email:
 $send_confirmation_email = true;
 $confirmation_email_name = "My Name";
-$confirmation_email_address = "my_email_address@gmail.com";
+$confirmation_email_address = "seller@paypalsandbox.com";
 $from_email_name = "My Name";
-$from_email_address = "my_email_address@gmail.com";
+$from_email_address = "seller@paypalsandbox.com";
 
 // Set this to true to save a log file:
 $save_log_file = true;
@@ -101,27 +101,13 @@ function send_plain_email($name = "", $address = "", $subject = "", $body = "", 
     return send_email($name, $address, $subject, $body, $from_name, $from_address, $html);
 }
 
+$process_ipn = false;
 $paypal_ipn_status = "VERIFICATION FAILED";
 if ($verified) {
     $paypal_ipn_status = "RECEIVER EMAIL MISMATCH";
     if ($receiver_email_found) {
+        $process_ipn = true;
         $paypal_ipn_status = "Completed Successfully";
-
-
-        // Process IPN
-        // A list of variables are available here:
-        // https://developer.paypal.com/webapps/developer/docs/classic/ipn/integration-guide/IPNandPDTVariables/
-
-        // This is an example for sending an automated email to the customer when they purchases an item for a specific amount:
-        if ($DATA["item_name"] == "Example Item" && $DATA["mc_gross"] == 49.99 && $DATA["mc_currency"] == "USD" && $DATA["payment_status"] == "Completed") {
-            $email_name = $DATA["first_name"] . " " . $DATA["last_name"];
-            $email_address = $DATA["payer_email"];
-            $email_subject = $test_text . "Completed order for: " . $DATA["item_name"];
-            $email_body = "<p>Thank you for purchasing " . $DATA["item_name"] . ".<BR><BR>This is an example email only.<BR><BR>Thank you.</p>";
-            send_email($email_name, $email_address, $email_subject, $email_body);
-        }
-
-
     }
 } elseif ($enable_sandbox) {
     if ($DATA["test_ipn"] != 1) {
@@ -129,6 +115,23 @@ if ($verified) {
     }
 } elseif ($DATA["test_ipn"] == 1) {
     $paypal_ipn_status = "RECEIVED FROM SANDBOX WHILE LIVE";
+}
+
+if ($process_ipn) {
+
+    // Process IPN
+    // A list of variables are available here:
+    // https://developer.paypal.com/webapps/developer/docs/classic/ipn/integration-guide/IPNandPDTVariables/
+
+    // This is an example for sending an automated email to the customer when they purchases an item for a specific amount:
+    if ($DATA["item_name"] == "something" && $DATA["mc_gross"] == 12.34 && $DATA["mc_currency"] == "USD" && $DATA["payment_status"] == "Completed") {
+        $email_name = $DATA["first_name"] . " " . $DATA["last_name"];
+        $email_address = $DATA["payer_email"];
+        $email_subject = $test_text . "Completed order for: " . $DATA["item_name"];
+        $email_body = "<p>Thank you for purchasing " . $DATA["item_name"] . ".<BR><BR>This is an example email only.<BR><BR>Thank you.</p>";
+        send_email($email_name, $email_address, $email_subject, $email_body);
+    }
+
 }
 
 if ($save_log_file) {
