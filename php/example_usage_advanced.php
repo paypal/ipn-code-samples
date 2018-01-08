@@ -27,6 +27,7 @@ $log_raw_data = false;
 
 date_default_timezone_set("America/Los_Angeles");
 list($year, $month, $day, $hour, $minute, $second, $timezone) = explode(":", date("Y:m:d:H:i:s:T"));
+
 require("PaypalIPN.php");
 use PaypalIPN;
 $ipn = new PaypalIPN();
