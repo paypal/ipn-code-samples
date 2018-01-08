@@ -96,7 +96,7 @@ if ($verified) {
     $paypal_ipn_status = "RECEIVED FROM SANDBOX WHILE LIVE";
 }
 
-function send_email($name = "", $address = "", $subject = "", $body = "", $from_name = null, $from_address = null, $html = true) {
+function send_email($name, $address, $subject, $body, $from_name = null, $from_address = null, $html = true) {
     if (is_null($from_name)) { $from_name = $GLOBALS["from_email_name"]; }
     if (is_null($from_address)) { $from_address = $GLOBALS["from_email_address"]; }
     $send_email_to = "=?UTF-8?B?" . base64_encode($name) . "?= <" . $address . ">";
@@ -113,7 +113,7 @@ function send_email($name = "", $address = "", $subject = "", $body = "", $from_
     return mail($send_email_to, "=?UTF-8?B?" . base64_encode($subject) . "?=", $body, $send_email_header);
 }
 
-function send_plain_email($name = "", $address = "", $subject = "", $body = "", $from_name = null, $from_address = null) {
+function send_plain_email($name, $address, $subject, $body, $from_name = null, $from_address = null) {
     return send_email($name, $address, $subject, $body, $from_name, $from_address, false);
 }
 
