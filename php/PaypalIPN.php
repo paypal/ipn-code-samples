@@ -83,11 +83,11 @@ class PaypalIPN
             if (count($keyval) == 2) {
                 // Since we do not want the plus signs in the date and email strings to be encoded to a space, we use rawurldecode instead of urldecode
                 if (
-                    // If a single plus sign is found in date...
+                    // single plus sign found in date
                     ($keyval[0] === 'payment_date' && substr_count($keyval[1], '+') === 1)
-                    // If a space is found that was not encoded using a plus sign...
+                    // space found that was not encoded using a plus sign
                     || strpos(rawurldecode($keyval[1]), ' ') !== false
-                    // If an un-encoded email address is found when receiving data from the sandbox...
+                    // un-encoded email address found when receiving data from the simulator
                     || ($_POST["test_ipn"] == 1 && filter_var($keyval[1], FILTER_VALIDATE_EMAIL))
                 ) {
                     // Keep plus signs
