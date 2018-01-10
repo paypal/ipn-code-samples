@@ -98,8 +98,12 @@ if ($verified) {
 }
 
 function send_email($name, $address, $subject, $body, $from_name = null, $from_address = null, $html = true) {
-    if (is_null($from_name)) { $from_name = $GLOBALS["from_email_name"]; }
-    if (is_null($from_address)) { $from_address = $GLOBALS["from_email_address"]; }
+    if (is_null($from_name)) {
+        $from_name = $GLOBALS["from_email_name"];
+    }
+    if (is_null($from_address)) {
+        $from_address = $GLOBALS["from_email_address"];
+    }
     $send_email_to = "=?UTF-8?B?" . base64_encode($name) . "?= <" . $address . ">";
     $send_email_from = "=?UTF-8?B?" . base64_encode($from_name) . "?= <" . $from_address . ">";
     $send_email_header  = "MIME-Version: 1.0" . "\r\n";
