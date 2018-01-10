@@ -17,9 +17,6 @@ $from_email_address = "seller@paypalsandbox.com";
 $save_log_file = true;
 $log_file_dir = __DIR__ . "/logs";
 
-// Set this to true to also log un-decoded data:
-$log_raw_data = false;
-
 // Here is some information on how to configure sendmail:
 // http://php.net/manual/en/function.mail.php#118210
 
@@ -48,21 +45,6 @@ ksort($DATA);
 $data_text = "";
 foreach ($DATA as $key => $value) {
     $data_text .= $key . " = " . $value . "\r\n";
-}
-
-$raw_data_text = "";
-if ($log_raw_data) {
-    $RAW_DATA = array();
-    foreach (explode("&", file_get_contents("php://input")) as $keyval) {
-        $keyval = explode("=", $keyval);
-        if (count($keyval) == 2) {
-            $RAW_DATA[$keyval[0]] = $keyval[1];
-        }
-    }
-    ksort($RAW_DATA);
-    foreach ($RAW_DATA as $key => $value) {
-        $raw_data_text .= "RAW: " . $key . " = " . $value . "\r\n";
-    }
 }
 
 $test_text = "";
@@ -165,14 +147,14 @@ if ($save_log_file) {
     }
     if ($save_log_file) {
         // Save data to text file
-        file_put_contents($dated_log_file_dir . "/" . $test_text . "paypal_ipn_" . $date . ".txt", $paypal_ipn_status . "\r\n" . $timestamp . "\r\n" . $data_text . $raw_data_text . "\r\n", FILE_APPEND);
+        file_put_contents($dated_log_file_dir . "/" . $test_text . "paypal_ipn_" . $date . ".txt", $paypal_ipn_status . "\r\n" . $timestamp . "\r\n" . $data_text . "\r\n", FILE_APPEND);
     }
 }
 
 if ($send_confirmation_email) {
     // Send confirmation email
     $email_subject = $test_text . "PayPal IPN : " . $paypal_ipn_status;
-    $email_body = $paypal_ipn_status . "\r\n" . $timestamp . "\r\n" . "\r\n" . $data_text . "\r\n" . $raw_data_text;
+    $email_body = $paypal_ipn_status . "\r\n" . $timestamp . "\r\n" . "\r\n" . $data_text;
     send_plain_email($confirmation_email_name, $confirmation_email_address, $email_subject, $email_body);
 }
 
