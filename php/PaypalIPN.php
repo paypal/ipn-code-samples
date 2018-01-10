@@ -63,12 +63,15 @@ class PaypalIPN
      * Verification Function
      * Sends the incoming post data back to PayPal using the cURL library.
      *
-     * @return array or false
+     * @return array|bool
      * @throws Exception
      */
     public function verifyIPN()
     {
-        if ( ! count($_POST)) {
+        if (version_compare(phpversion(), '5.3.0', '<')) {
+            throw new Exception("Requires PHP version 5.3.0 or greater");
+        }
+        if ( ! count($_POST) ) {
             throw new Exception("Missing POST Data");
         }
 
@@ -76,22 +79,23 @@ class PaypalIPN
         $raw_post_array = explode('&', $raw_post_data);
         $myPost = array();
         $magic_quotes_enabled = false;
-        if (function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc() == 1) {
-            $magic_quotes_enabled = true;
-        }
         foreach ($raw_post_array as $keyval) {
             $keyval = explode('=', $keyval);
             if (count($keyval) == 2) {
                 // Since we do not want the plus signs in the date and email strings to be encoded to a space, we use rawurldecode instead of urldecode
-                if (($keyval[0] === 'payment_date' && substr_count($keyval[1], '+') === 1) || strpos(rawurldecode($keyval[1]), ' ') !== false || ($_POST["test_ipn"] == 1 && filter_var($keyval[1], FILTER_VALIDATE_EMAIL))) {
+                if (
+                    // If a single plus sign is found in date, then do not replace plus signs with spaces
+                    ($keyval[0] === 'payment_date' && substr_count($keyval[1], '+') === 1)
+                    // If a space is found that was not encoded using a plus sign, then do not replace plus signs with spaces
+                    || strpos(rawurldecode($keyval[1]), ' ') !== false
+                    // If an un-encoded email address is found when receiving data from the sandbox, then do not replace plus signs with spaces
+                    || ($_POST["test_ipn"] == 1 && filter_var($keyval[1], FILTER_VALIDATE_EMAIL))
+                ) {
                     // Keep plus signs
                     $myPost[$keyval[0]] = rawurldecode($keyval[1]);
                 } else {
                     // Convert plus signs to spaces
                     $myPost[$keyval[0]] = urldecode($keyval[1]);
-                    if ($magic_quotes_enabled) {
-                        $myPost[$keyval[0]] = stripslashes($myPost[$keyval[0]]);
-                    }
                 }
             }
         }
@@ -121,7 +125,7 @@ class PaypalIPN
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: Close'));
         $res = curl_exec($ch);
-        if ( ! ($res)) {
+        if ( ! ($res) ) {
             $errno = curl_errno($ch);
             $errstr = curl_error($ch);
             curl_close($ch);
@@ -140,6 +144,6 @@ class PaypalIPN
         if ($res == self::VALID) {
             return $myPost;
         }
-        return false;
+        return null;
     }
 }
