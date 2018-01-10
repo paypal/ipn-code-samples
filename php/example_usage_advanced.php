@@ -27,6 +27,8 @@ $log_raw_data = false;
 
 date_default_timezone_set("America/Los_Angeles");
 list($year, $month, $day, $hour, $minute, $second, $timezone) = explode(":", date("Y:m:d:H:i:s:T"));
+$date = $year . "-" . $month . "-" . $day;
+$timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
 
 require("PaypalIPN.php");
 use PaypalIPN;
@@ -68,8 +70,6 @@ if ($DATA["test_ipn"] == 1) {
     $test_text = "Test ";
 }
 
-$date = $year . "-" . $month . "-" . $day;
-$timestamp = $date . " " . $hour . ":" . $minute . ":" . $second . " " . $timezone;
 $dated_log_file_dir = $log_file_dir . "/" . $test_text . $year . "/" . $test_text . $month;
 
 // Check the receiver email to see if it matches your list of paypal email addresses
