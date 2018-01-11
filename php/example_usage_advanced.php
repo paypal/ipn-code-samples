@@ -120,8 +120,8 @@ if ($process_ipn) {
 }
 
 if ($save_log_file) {
-    // Create log file directory
     $dated_log_file_dir = $log_file_dir . "/" . $test_text . $year . "/" . $test_text . $month;
+    // Create log file directory
     if (!is_dir($dated_log_file_dir)) {
         if (!file_exists($dated_log_file_dir)) {
             mkdir($dated_log_file_dir, 0777, true);
