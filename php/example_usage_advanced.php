@@ -52,8 +52,6 @@ if ($DATA["test_ipn"] == 1) {
     $test_text = "Test ";
 }
 
-$dated_log_file_dir = $log_file_dir . "/" . $test_text . $year . "/" . $test_text . $month;
-
 // Check the receiver email to see if it matches your list of paypal email addresses
 $receiver_email_found = false;
 foreach ($my_email_addresses as $a) {
@@ -123,6 +121,7 @@ if ($process_ipn) {
 
 if ($save_log_file) {
     // Create log file directory
+    $dated_log_file_dir = $log_file_dir . "/" . $test_text . $year . "/" . $test_text . $month;
     if (!is_dir($dated_log_file_dir)) {
         if (!file_exists($dated_log_file_dir)) {
             mkdir($dated_log_file_dir, 0777, true);
