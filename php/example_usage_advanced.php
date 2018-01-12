@@ -4,14 +4,14 @@
 $enable_sandbox = true;
 
 // Use this to specify all of the email addresses that you have attached to paypal:
-$my_email_addresses = array("seller@paypalsandbox.com", "seller2@paypalsandbox.com", "seller3@paypalsandbox.com");
+$my_email_addresses = array("my_email_address@example.com", "my_email_address2@example.com", "my_email_address3@example.com");
 
 // Set this to true to send a confirmation email:
 $send_confirmation_email = true;
 $confirmation_email_name = "My Name";
-$confirmation_email_address = "seller@paypalsandbox.com";
+$confirmation_email_address = "my_email_address@example.com";
 $from_email_name = "My Name";
-$from_email_address = "seller@paypalsandbox.com";
+$from_email_address = "my_email_address@example.com";
 
 // Set this to true to save a log file:
 $save_log_file = true;
