@@ -10,6 +10,8 @@ $my_email_addresses = array("my_email_address@example.com", "my_email_address2@e
 $send_confirmation_email = true;
 $confirmation_email_name = "My Name";
 $confirmation_email_address = "my_email_address@example.com";
+
+// Set these to the name and email address that you are sending emails from:
 $from_email_name = "My Name";
 $from_email_address = "my_email_address@example.com";
 
