@@ -16,7 +16,7 @@ class PaymentNotificationsController < ApplicationController
     else
       # error
     end
-    render nothing: true
+    head :ok
   end
   protected
   def validate_IPN_notification(raw)
