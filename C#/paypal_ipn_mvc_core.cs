@@ -12,8 +12,6 @@ namespace PP_IPN_Tester.Controllers
     {
         private class IPNContext
         {
-            public string OfferId { get; set; }
-
             public HttpRequest IPNRequest { get; set; }
 
             public string RequestBody { get; set; }
@@ -22,11 +20,10 @@ namespace PP_IPN_Tester.Controllers
         }
 
         [HttpPost]
-        public HttpStatusCodeResult Receive()
+        public IActionResult Receive()
         {
             IPNContext ipnContext = new IPNContext()
             {
-                OfferId = offerId,
                 IPNRequest = Request
             };
 
@@ -36,13 +33,13 @@ namespace PP_IPN_Tester.Controllers
 	        }
 
             //Store the IPN received from PayPal
-            LogRequest(context);
+            LogRequest(ipnContext);
 
             //Fire and forget verification task
-            Task.Run(() =>  VerifyTask(Request));
+            Task.Run(() =>  VerifyTask(ipnContext));
 
             //Reply back a 200 code
-            return new HttpStatusCodeResult(HttpStatusCode.OK);
+            return Ok();
         }
 
         private void VerifyTask(IPNContext ipnContext)
