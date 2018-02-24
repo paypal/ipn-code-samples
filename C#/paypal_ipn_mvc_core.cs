@@ -24,7 +24,7 @@ namespace PP_IPN_Tester.Controllers
         [HttpPost]
         public HttpStatusCodeResult Receive()
         {
-            IPNContext context = new IPNContext()
+            IPNContext ipnContext = new IPNContext()
             {
                 OfferId = offerId,
                 IPNRequest = Request
