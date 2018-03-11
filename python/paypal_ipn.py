@@ -7,8 +7,8 @@ import sys
 import urllib.parse
 import requests
 
-VERIFY_URL_PROD = 'https://www.paypal.com/cgi-bin/webscr'
-VERIFY_URL_TEST = 'https://www.sandbox.paypal.com/cgi-bin/webscr'
+VERIFY_URL_PROD = 'https://ipnpb.paypal.com/cgi-bin/webscr'
+VERIFY_URL_TEST = 'https://ipnpb.sandbox.paypal.com/cgi-bin/webscr'
 
 # Switch as appropriate
 VERIFY_URL = VERIFY_URL_TEST
