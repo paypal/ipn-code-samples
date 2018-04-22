@@ -1,0 +1,357 @@
+# paypal-ipn-cloudformation.json
+
+# receive ipn message to ipn-receiver, post to sns and return 200 ok (else 5xx no sns)
+# sns queue is ipn-topic
+# sns triggers ipn-verifier which writes to sqs on VERIFIED
+# all of the above write structured items to log .. to s3 .. for query
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Cloud Formation Stack for IPN interfacing; internal state on SQS unverified-ipn{-prod/-test} then verified messages delivered on SQS verified-orders{-prod/-test}"
+Parameters:
+  DeliveryQueueName:
+    Description: Delivery Queue
+    Type: String
+    Default: verified-ipn-test
+  TimeoutQueueName:
+    Description: Delivery Timeout Queue
+    Type: String
+    Default: timeout-ipn-test
+  ErrorQueueName:
+    Description: Delivery Error Queue
+    Type: String
+    Default: errors-ipn-test
+  VerifyURL:
+    Description: PaypalMessageVerificationURL
+    Type: String
+    Default: https://ipnpb.sandbox.paypal.com/cgi-bin/webscr   # for Sandbox IPNs
+    #    Default: https://ipnpb.paypal.com/cgi-bin/webscr   # for live IPNs 
+  InternalNotificationName:
+    Description: Internal Queue
+    Type: String
+    Default: unverified-ipn-test
+Outputs:
+  DeliveryQueueArn:
+    Description: The Arn of the SQS Delivery Queue
+    Value: !GetAtt DeliveryQueue.Arn
+  TimeoutQueueArn:
+    Description: The Arn of the Dead Letter (timeout) Queue
+    Value: !GetAtt TimeoutQueue.Arn
+  ErrorQueueArn:
+    Description: The Arn of the Error (unverified) Queue
+    Value: !GetAtt ErrorQueue.Arn
+  ReceiverURL:
+    Description: The URL to be confgured into Paypal
+    Value: !Sub https://${ReceiverApi}.execute-api.ap-southeast-2.amazonaws.com/LATEST
+   
+Resources:
+
+  DeliveryQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref DeliveryQueueName
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt ErrorQueue.Arn
+        maxReceiveCount: 3
+
+  ErrorQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref ErrorQueueName 
+      MessageRetentionPeriod: 1209600
+
+  TimeoutQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Ref TimeoutQueueName 
+      MessageRetentionPeriod: 1209600
+      
+  InternalNotification:
+    Type: "AWS::SNS::Topic"
+    Properties: 
+      DisplayName: !Ref InternalNotificationName
+      Subscription:
+      - Endpoint: !GetAtt DeliveryLambda.Arn
+        Protocol: lambda
+      TopicName: !Ref InternalNotificationName
+
+  NotificationInvokePolicy:
+    Type: "AWS::Lambda::Permission"
+    Properties: 
+      Action: "lambda:InvokeFunction"
+      Principal: "sns.amazonaws.com"
+      FunctionName: !GetAtt DeliveryLambda.Arn
+      SourceArn: !Ref InternalNotification
+
+  # IAM Roles
+
+  ReceiverExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: ReceiverExecutionRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
+            - Effect: Allow
+              Action: sns:Publish
+              Resource: !Ref InternalNotification
+
+  DeliveryExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: DeliveryExecutionRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              Resource: arn:aws:logs:*:*:*
+            - Effect: Allow
+              Action: "sqs:SendMessage"
+              Resource: !GetAtt DeliveryQueue.Arn
+
+  APIGatewayReceiverRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: APIGatewayReceiverRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - lambda:InvokeFunction
+              Resource: "*"
+            - Effect: Allow
+              Action: sns:Publish
+              Resource: !Ref InternalNotification
+            - Effect: Allow
+              Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:DescribeLogGroups
+              - logs:DescribeLogStreams
+              - logs:PutLogEvents
+              - logs:GetLogEvents
+              - logs:FilterLogEvents
+              Resource: "*"
+      
+## Lambda Functions
+
+  ReceiverLambda:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: index.lambda_handler
+      Role: !GetAtt 
+        - ReceiverExecutionRole
+        - Arn
+      Code:
+        ZipFile: !Join 
+          - |+
+
+          - - from __future__ import print_function
+            - import json
+            - import urllib
+            - import boto3
+            - import time
+            - print('Loading function')
+            - sns = boto3.client('sns')
+            - 'def lambda_handler(event, context):'
+            - '  print("Received event: " + json.dumps(event, indent=2))'
+            - '  response = sns.publish('
+            - !Join 
+              - ''
+              - - '    TargetArn="'
+                - !Ref InternalNotification
+                - '",'
+            - '    Message=json.dumps({"default": json.dumps(event)}),'
+            - '    MessageStructure="json")'
+            - '  print("Received response: ", response)'
+            - '  print("Request ID:",context.aws_request_id)'
+            - '  return ""'
+      Timeout: "300"
+      Runtime: python2.7
+      MemorySize: "128"
+
+  DeliveryLambda:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: index.lambda_handler
+      Role: !GetAtt 
+        - DeliveryExecutionRole
+        - Arn
+      Code:
+        ZipFile: !Join 
+          - |+
+
+          - - from __future__ import print_function
+            - import json
+            - import urllib
+            - import boto3
+            - import time
+            - from urllib2 import urlopen
+            - print('Loading function')
+            - sqs = boto3.client('sqs')
+            - 'def lambda_handler(event, context):'
+            - '  print("Delivering event: " + json.dumps(event, indent=2))'
+            - '  containedMessage = event["Records"][0]["Sns"]["Message"]'
+            - '  bodyText = json.loads(containedMessage)["body-text"]'
+            - !Sub '  checkQuery = "${VerifyURL}?cmd=_notify-validate&"+bodyText'
+            - '  verifyResponse = urlopen(checkQuery).read().strip()'
+            - '  print("verifyResponse: " + verifyResponse)'
+            - '  if verifyResponse == "VERIFIED":'
+            - '    print("VERIFIED")'
+            - !Join 
+              - ''
+              - - '    response = sqs.send_message(QueueUrl="https://sqs.'
+                - !Ref "AWS::Region"
+                - '.amazonaws.com/'
+                - !Ref "AWS::AccountId"
+                - '/'
+                - !GetAtt DeliveryQueue.QueueName
+                - '",MessageBody=json.dumps(containedMessage) )'
+            - '  else:'
+            - '    print("ERROR")'
+            - !Join 
+              - ''
+              - - '    response = sqs.send_message(QueueUrl="https://sqs.'
+                - !Ref "AWS::Region"
+                - '.amazonaws.com/'
+                - !Ref "AWS::AccountId"
+                - '/'
+                - !GetAtt ErrorQueue.QueueName
+                - '",MessageBody=json.dumps(containedMessage) )'
+            - ''
+            - '  print("Received response: ", response)'
+            - '  print("Request ID:",context.aws_request_id)'
+            - '  return response'
+      Timeout: "300"
+      Runtime: python2.7
+      MemorySize: "128"
+
+  ## API Gateway
+
+  ApiGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn:
+        !GetAtt APIGatewayReceiverRole.Arn
+
+  ReceiverApi:
+    Type: "AWS::ApiGateway::RestApi"
+    Properties:
+      Name: "reciever"
+      Description: "API to receive updates"
+      FailOnWarnings: true
+
+  ReceiveMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ReceiverApi
+      ResourceId: !GetAtt ReceiverApi.RootResourceId
+      HttpMethod: POST
+      AuthorizationType: NONE
+      RequestParameters:
+        method.request.querystring.name: taskToken
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Credentials: !GetAtt APIGatewayReceiverRole.Arn
+        Uri: !Sub arn:aws:apigateway:ap-southeast-2:lambda:path/2015-03-31/functions/${ReceiverLambda.Arn}/invocations
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseTemplates:
+            text/html: '' 
+        RequestTemplates:
+          application/x-www-form-urlencoded: |
+            {
+              "body-text" : "$input.body",
+              "context" : {
+                  "account-id" : "$context.identity.accountId",
+                  "api-id" : "$context.apiId",
+                  "api-key" : "$context.identity.apiKey",
+                  "authorizer-principal-id" : "$context.authorizer.principalId",
+                  "caller" : "$context.identity.caller",
+                  "cognito-authentication-provider" : "$context.identity.cognitoAuthenticationProvider",
+                  "cognito-authentication-type" : "$context.identity.cognitoAuthenticationType",
+                  "cognito-identity-id" : "$context.identity.cognitoIdentityId",
+                  "cognito-identity-pool-id" : "$context.identity.cognitoIdentityPoolId",
+                  "http-method" : "$context.httpMethod",
+                  "stage" : "$context.stage",
+                  "source-ip" : "$context.identity.sourceIp",
+                  "user" : "$context.identity.user",
+                  "user-agent" : "$context.identity.userAgent",
+                  "user-arn" : "$context.identity.userArn",
+                  "request-id" : "$context.requestId",
+                  "resource-id" : "$context.resourceId",
+                  "resource-path" : "$context.resourcePath"
+              }              
+            }
+      MethodResponses:
+      - StatusCode: 200
+        ResponseModels:
+          text/html: Empty
+
+# Stages
+
+  ReceiverApiStage:
+    DependsOn:
+    - ReceiverApi
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      DeploymentId:
+        Ref: ApiDeployment
+      MethodSettings:
+      - DataTraceEnabled: true
+        HttpMethod: "*"
+        LoggingLevel: INFO
+        ResourcePath: "/*"
+        ThrottlingBurstLimit : 2       # increase for production; see README.md
+        ThrottlingRateLimit : 1        # increase for production; see README.md
+      RestApiId:
+        Ref: ReceiverApi
+      StageName: LATEST
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+    - ReceiveMethod
+    Properties:
+      RestApiId:
+        Ref: ReceiverApi
+      StageName: Dummmy  # Note: "Dummy" is a dummy stage and not a mistake.  Required to ease cfn - see aws docs
