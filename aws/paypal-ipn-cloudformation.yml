@@ -134,7 +134,9 @@ Resources:
               Resource: arn:aws:logs:*:*:*
             - Effect: Allow
               Action: "sqs:SendMessage"
-              Resource: !GetAtt DeliveryQueue.Arn
+              Resource:
+                - !GetAtt DeliveryQueue.Arn
+                - !GetAtt ErrorQueue.Arn
 
   APIGatewayReceiverRole:
     Type: "AWS::IAM::Role"
