@@ -58,7 +58,7 @@ class PaypalIPN
      * @return bool
      * @throws Exception
      */
-    public function verifyIPN()
+    public function verifyIPN($ch = null)
     {
         if ( ! count($_POST)) {
             throw new Exception("Missing POST Data");
@@ -96,7 +96,9 @@ class PaypalIPN
         }
 
         // Post the data back to PayPal, using curl. Throw exceptions if errors occur.
-        $ch = curl_init($this->getPaypalUri());
+        if (! isset($ch))
+            $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->getPaypalUri());
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
