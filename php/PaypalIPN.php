@@ -6,6 +6,8 @@ class PaypalIPN
     private $use_sandbox = false;
     /** @var bool Indicates if the local certificates are used. */
     private $use_local_certs = true;
+    /** @var curl handler */
+    private $curl_handler = null;
 
     /** Production Postback URL */
     const VERIFY_URI = 'https://ipnpb.paypal.com/cgi-bin/webscr';
@@ -16,6 +18,11 @@ class PaypalIPN
     const VALID = 'VERIFIED';
     /** Response from PayPal indicating validation failed */
     const INVALID = 'INVALID';
+
+    public function __construct($curl_handler = null)
+    {
+        $this->curl_handler = $curl_handler;
+    }
 
     /**
      * Sets the IPN verification to sandbox mode (for use when testing,
@@ -96,7 +103,8 @@ class PaypalIPN
         }
 
         // Post the data back to PayPal, using curl. Throw exceptions if errors occur.
-        $ch = curl_init($this->getPaypalUri());
+        $ch = isset($this->curl_handler) ? $this->curl_handler : curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->getPaypalUri());
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
