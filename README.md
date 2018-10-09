@@ -22,7 +22,10 @@ a response string with "VERIFIED" or "INVALID".
 
 * IPN Listener script samples are provided for different languages.
 * Deploy IPN Listener script in a cloud environment or you can expose your server port using any third party local tunneling software, so that you can receive PayPal IPN callback.
-* You can test your software using the [PayPal IPN Simulator](https://developer.paypal.com/developer/ipnSimulator/). Ensure your listener is validating the sandbox messages at the correct testing endpoint. 
+
+### Testing with the sandbox
+Please note that calls from the [PayPal IPN Simulator](https://developer.paypal.com/developer/ipnSimulator/) cannot be validated.  
+You must [create a PayPal sandbox account](https://developer.paypal.com/developer/accounts/). IPN calls from the sandbox after a test transaction is performed will be validated providing you set your IPN validation endpoint to the sandbox URL.
 
 ## License
 
