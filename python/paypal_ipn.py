@@ -18,7 +18,7 @@ print ()
 
 # Read and parse query string
 param_str = sys.stdin.readline().strip()
-params = urllib.parse.parse_qsl(param_str)
+params = urllib.parse.parse_qsl(param_str, keep_blank_values=True)
 
 # Add '_notify-validate' parameter
 params.append(('cmd', '_notify-validate'))
