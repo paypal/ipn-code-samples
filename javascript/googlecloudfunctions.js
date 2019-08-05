@@ -1,8 +1,7 @@
 /**
- * Sample PayPal IPN Listener implemented for Google Clound Functions.
+ * Sample PayPal IPN Listener implemented for Google Cloud Functions.
  */
 
-const querystring = require("querystring");
 const request = require("request");
 
 /**
@@ -42,10 +41,8 @@ exports.ipnHandler = function ipnHandler(req, res) {
 
   // JSON object of the IPN message consisting of transaction details.
   let ipnTransactionMessage = req.body;
-  // Convert JSON ipn data to a query string since Google Cloud Function does not expose raw request data.
-  let formUrlEncodedBody = querystring.stringify(ipnTransactionMessage);
   // Build the body of the verification post message by prefixing 'cmd=_notify-validate'.
-  let verificationBody = `cmd=_notify-validate&${formUrlEncodedBody}`;
+  let verificationBody = `cmd=_notify-validate&${req.rawBody}`;
 
   console.log(`Verifying IPN: ${verificationBody}`);
 
@@ -69,10 +66,10 @@ exports.ipnHandler = function ipnHandler(req, res) {
           `Invalid IPN: IPN message for Transaction ID: ${ipnTransactionMessage.txn_id} is invalid.`
         );
       } else {
-        console.error("Unexpected reponse body.");
+        console.error("Unexpected response body.");
       }
     } else {
-      // Error occured while posting to PayPal.
+      // Error occurred while posting to PayPal.
       console.error(error);
       console.log(body);
     }
