@@ -1,5 +1,5 @@
 /**
- * Sample PayPal IPN Listener implemented for Google Clound Functions.
+ * Sample PayPal IPN Listener implemented for Google Cloud Functions.
  */
 
 const request = require("request");
