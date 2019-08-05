@@ -2,7 +2,6 @@
  * Sample PayPal IPN Listener implemented for Google Clound Functions.
  */
 
-const querystring = require("querystring");
 const request = require("request");
 
 /**
