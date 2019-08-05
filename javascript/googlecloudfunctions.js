@@ -66,10 +66,10 @@ exports.ipnHandler = function ipnHandler(req, res) {
           `Invalid IPN: IPN message for Transaction ID: ${ipnTransactionMessage.txn_id} is invalid.`
         );
       } else {
-        console.error("Unexpected reponse body.");
+        console.error("Unexpected response body.");
       }
     } else {
-      // Error occured while posting to PayPal.
+      // Error occurred while posting to PayPal.
       console.error(error);
       console.log(body);
     }
