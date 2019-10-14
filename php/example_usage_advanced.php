@@ -111,7 +111,7 @@ if ($process_ipn) {
         $email_address = $DATA["payer_email"];
         $email_subject = $test_text . "Completed order for: " . $DATA["item_name"];
         $email_body = "<p>Thank you for purchasing " . $DATA["item_name"] . ".<BR><BR>This is an example email only.<BR><BR>Thank you.</p>";
-        send_email($email_name, $email_address, $email_subject, $email_body);
+        send_html_email($email_name, $email_address, $email_subject, $email_body);
     }
 
 }
