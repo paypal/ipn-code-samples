@@ -79,7 +79,7 @@ if ($verified) {
     $paypal_ipn_status = "RECEIVED FROM SANDBOX WHILE LIVE";
 }
 
-function send_email($name, $address, $subject, $body, $from_name = null, $from_address = null, $html = true) {
+function send_email($name, $address, $subject, $body, $from_name = null, $from_address = null, $html = false) {
     if (is_null($from_name)) { $from_name = $GLOBALS["from_email_name"]; }
     if (is_null($from_address)) { $from_address = $GLOBALS["from_email_address"]; }
     $send_email_to = "=?UTF-8?B?" . base64_encode($name) . "?= <" . $address . ">";
@@ -95,8 +95,8 @@ function send_email($name, $address, $subject, $body, $from_name = null, $from_a
     return mail($send_email_to, "=?UTF-8?B?" . base64_encode($subject) . "?=", $body, $send_email_header);
 }
 
-function send_plain_email($name, $address, $subject, $body, $from_name = null, $from_address = null) {
-    return send_email($name, $address, $subject, $body, $from_name, $from_address, false);
+function send_html_email($name, $address, $subject, $body, $from_name = null, $from_address = null) {
+    return send_email($name, $address, $subject, $body, $from_name, $from_address, true);
 }
 
 if ($process_ipn) {
@@ -149,7 +149,7 @@ if ($save_log_file) {
 
 if ($send_confirmation_email) {
     // Send confirmation email
-    send_plain_email($confirmation_email_name, $confirmation_email_address, $test_text . "PayPal IPN : " . $paypal_ipn_status, $paypal_ipn_status . "\r\n" . $timestamp . "\r\n" . $data_text);
+    send_email($confirmation_email_name, $confirmation_email_address, $test_text . "PayPal IPN : " . $paypal_ipn_status, $paypal_ipn_status . "\r\n" . $timestamp . "\r\n" . $data_text);
 }
 
 // Reply with an empty 200 response to indicate to paypal the IPN was received correctly
