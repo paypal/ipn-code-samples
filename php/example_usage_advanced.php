@@ -80,23 +80,18 @@ if ($verified) {
 }
 
 function send_email($name, $address, $subject, $body, $from_name = null, $from_address = null, $html = true) {
-    if (is_null($from_name)) {
-        $from_name = $GLOBALS["from_email_name"];
-    }
-    if (is_null($from_address)) {
-        $from_address = $GLOBALS["from_email_address"];
-    }
+    if (is_null($from_name)) { $from_name = $GLOBALS["from_email_name"]; }
+    if (is_null($from_address)) { $from_address = $GLOBALS["from_email_address"]; }
     $send_email_to = "=?UTF-8?B?" . base64_encode($name) . "?= <" . $address . ">";
     $send_email_from = "=?UTF-8?B?" . base64_encode($from_name) . "?= <" . $from_address . ">";
-    $send_email_header  = "MIME-Version: 1.0" . "\r\n";
+    $send_email_header  = "MIME-Version: 1.0";
     if ($html) {
         $body = "<html><head><title>" . $subject . "</title></head><body>" . $body . "</body></html>";
-        $send_email_header .= "Content-type: text/html; charset=UTF-8" . "\r\n";
+        $send_email_header .= "\r\n" . "Content-type: text/html; charset=UTF-8";
     } else {
-        $send_email_header .= "Content-type: text/plain; charset=UTF-8" . "\r\n";
+        $send_email_header .= "\r\n" . "Content-type: text/plain; charset=UTF-8";
     }
-    $send_email_header .= "To: " . $send_email_to . "\r\n";
-    $send_email_header .= "From: " . $send_email_from . "\r\n";
+    $send_email_header .= "\r\n" . "From: " . $send_email_from;
     return mail($send_email_to, "=?UTF-8?B?" . base64_encode($subject) . "?=", $body, $send_email_header);
 }
 
